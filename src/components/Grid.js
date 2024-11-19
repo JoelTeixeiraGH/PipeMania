@@ -1,6 +1,10 @@
 import { Container, Assets } from 'pixi.js';
 import Tile from './Tile'; // Import the Tile class
+import Chain from './Chain';
+import PathBlocker from './PathBlocker';
+
 import NewBlocksRow from './NewBlocksRow';
+import PipeVertical from './pipes/PipeVertical';
 
 // Tiles
 import basicTile from '../assets/bg_basic_tile.png';
@@ -36,38 +40,32 @@ export default class Grid {
 
   async init() {
     // Load textures
-    const basicGridTileTexture = await Assets.load(basicTile);
-    basicGridTileTexture.source.scaleMode = 'nearest';
     const explosion5TileTexture = await Assets.load(explosion5Tile);
     const startingPointTexture = await Assets.load(startingPointRightTile);
     startingPointTexture.source.scaleMode = 'nearest';
     const blockedTileTexture = await Assets.load(blockedTile);
     blockedTileTexture.source.scaleMode = 'nearest';
 
+    /* const pipeVertical1 = new PipeVertical();
+    app.stage.addChild(pipeVertical1); */
+
     // Create grid tiles
     for (let row = 0; row < this.gridRows; row++) {
       for (let col = 0; col < this.gridCols; col++) {
-        const tile = new Tile({
-          texture: basicGridTileTexture,
-          row,
-          col,
-          label: 'Basic',
-        });
+        let tile;
+        // Randomly decide if the tile should be a PathBlocker
+        if (Math.random() < 0.05) {
+          tile = new PathBlocker(row, col); // Create a PathBlocker object
+          this.blockedCells.push({ row, col }); // Track blocked cells
+        } else {
+          tile = new Chain(row, col); // Create a Chain object
+        }
 
         // Scale and position the tile
         tile.scale.set(this.spriteScale);
         tile.x = col * this.spriteWidth * this.spriteScale;
         tile.y = row * this.spriteHeight * this.spriteScale;
 
-        // Randomly block tiles
-        if (Math.random() < 0.05) {
-          tile.blockTile(blockedTileTexture); // Use the Tile class method
-          this.blockedCells.push({ row, col });
-        } else {
-          tile.on('pointerdown', (event) => this.onPointerDown(event, explosion5TileTexture));
-        }
-
-        // Add the tile to the container
         this.gridContainer.addChild(tile);
       }
     }
@@ -112,7 +110,7 @@ export default class Grid {
     return this.gridContainer.getChildAt(index); // This will return a Tile instance
   }
 
-  onPointerDown(event, newTexture) {
+  /*  onPointerDown(event, newTexture) {
     const tile = event.currentTarget;
     const newTile = this.newBlocksRow.replaceTileInGrid();
 
@@ -122,5 +120,5 @@ export default class Grid {
 
     // Shift new blocks row to the left
     this.newBlocksRow.shiftToLeft();
-  }
+  } */
 }

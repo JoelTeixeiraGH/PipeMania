@@ -1,8 +1,7 @@
-import { Sprite } from 'pixi.js';
-
+import { Sprite, Assets } from 'pixi.js';
 export default class Tile extends Sprite {
-  constructor({ texture, row, col, label }) {
-    super(texture); // Call Sprite constructor with the texture
+  constructor({ row, col, label }) {
+    super();
     this.row = row;
     this.col = col;
     this.label = label;
@@ -10,16 +9,12 @@ export default class Tile extends Sprite {
     // Optional: Initialize other properties
     this.isBlocked = false; // ??
     this.isFilled = false; // ???
-    this.interactive = true; // Make tiles interactive by default
-    this.buttonMode = true; // Show pointer cursor by default
   }
 
-  // Example method to block a tile
-  blockTile(blockedTexture) {
-    this.texture = blockedTexture;
-    this.isBlocked = true;
-    this.interactive = false;
-    this.buttonMode = false;
+  async loadTexture(texturePath) {
+    const texture = await Assets.load(texturePath);
+    texture.source.scaleMode = 'nearest';
+    this.texture = texture;
   }
 
   highlight() {
