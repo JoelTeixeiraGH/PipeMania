@@ -1,14 +1,12 @@
+import pipeHorizontalTexture from '../../assets/pipe_horizontal.png';
+import Pipe from './Pipe';
 export default class PipeHorizontal extends Pipe {
   constructor(row, col) {
     super({
       label: 'pipeHorizontal',
-      up: false,
-      down: false,
-      left: true,
-      right: true,
-      // texture: ...
+      canConnectLeft: true,
+      canConnectRight: true,
     });
+    this.loadTexture(pipeHorizontalTexture);
   }
-
-  //load texture or init object?
 }
