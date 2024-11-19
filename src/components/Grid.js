@@ -5,6 +5,7 @@ import PathBlocker from './PathBlocker';
 
 import NewBlocksRow from './NewBlocksRow';
 import PipeVertical from './pipes/PipeVertical';
+import StartingPointRight from './pipes/StartingPointRight';
 
 // Tiles
 import basicTile from '../assets/bg_basic_tile.png';
@@ -39,16 +40,6 @@ export default class Grid {
   }
 
   async init() {
-    // Load textures
-    const explosion5TileTexture = await Assets.load(explosion5Tile);
-    const startingPointTexture = await Assets.load(startingPointRightTile);
-    startingPointTexture.source.scaleMode = 'nearest';
-    const blockedTileTexture = await Assets.load(blockedTile);
-    blockedTileTexture.source.scaleMode = 'nearest';
-
-    /* const pipeVertical1 = new PipeVertical();
-    app.stage.addChild(pipeVertical1); */
-
     // Create grid tiles
     for (let row = 0; row < this.gridRows; row++) {
       for (let col = 0; col < this.gridCols; col++) {
@@ -70,14 +61,15 @@ export default class Grid {
       }
     }
 
-    this.startingPoint = this.placeStartingPoint(startingPointTexture);
+    this.startingPoint = this.placeStartingPoint();
+    this.gridContainer.addChild(this.startingPoint);
 
     // Center the grid on the screen
     this.gridContainer.x = (this.app.renderer.width - this.gridContainer.width) / 2;
     this.gridContainer.y = (this.app.renderer.height - this.gridContainer.height) / 2;
   }
 
-  placeStartingPoint(startingPointTexture) {
+  placeStartingPoint() {
     let validStartPosition = false;
     let startRow, startCol;
 
@@ -94,12 +86,21 @@ export default class Grid {
       }
     }
 
-    const startingTile = this.getTileAt(startRow, startCol);
-    startingTile.texture = startingPointTexture;
-    startingTile.interactive = false;
-    startingTile.buttonMode = false;
+    // Find and remove the existing tile at the starting position
+    const existingTile = this.gridContainer.children.find((tile) => tile.row === startRow && tile.col === startCol);
+    if (existingTile) {
+      this.gridContainer.removeChild(existingTile);
+    }
 
-    return startingTile;
+    // Create an instance of StartingPoint
+    const startingPoint = new StartingPointRight(startRow, startCol);
+
+    // Scale and position the starting point
+    startingPoint.scale.set(this.spriteScale);
+    startingPoint.x = startCol * this.spriteWidth * this.spriteScale;
+    startingPoint.y = startRow * this.spriteHeight * this.spriteScale;
+
+    return startingPoint;
   }
 
   getTileAt(row, col) {
@@ -109,16 +110,4 @@ export default class Grid {
     const index = row * this.gridCols + col;
     return this.gridContainer.getChildAt(index); // This will return a Tile instance
   }
-
-  /*  onPointerDown(event, newTexture) {
-    const tile = event.currentTarget;
-    const newTile = this.newBlocksRow.replaceTileInGrid();
-
-    // Update the clicked tile
-    tile.texture = newTile.texture;
-    tile.label = newTile.label;
-
-    // Shift new blocks row to the left
-    this.newBlocksRow.shiftToLeft();
-  } */
 }

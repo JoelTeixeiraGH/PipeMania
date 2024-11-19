@@ -20,7 +20,7 @@ grid.init();
 const waterFlow = new WaterFlow({ grid });
 
 // Start the flow after a short delay (for example, 10 seconds)
-setTimeout(() => {
+/* setTimeout(() => {
   const startingPoint = grid.startingPoint; // Assuming `grid.startingPoint` points to the starting tile
   waterFlow.startFlow(startingPoint); // Start the flow of water
-}, 10000);
+}, 10000); */

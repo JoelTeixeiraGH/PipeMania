@@ -21,4 +21,16 @@ export default class Chain extends Tile {
   onPointerDown(event) {
     console.log('cliquei');
   }
+
+  /*  onPointerDown(event, newTexture) {
+    const tile = event.currentTarget;
+    const newTile = this.newBlocksRow.replaceTileInGrid();
+
+    // Update the clicked tile
+    tile.texture = newTile.texture;
+    tile.label = newTile.label;
+
+    // Shift new blocks row to the left
+    this.newBlocksRow.shiftToLeft();
+  } */
 }
