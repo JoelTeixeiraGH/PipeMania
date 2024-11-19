@@ -1,6 +1,7 @@
 import { Sprite, Assets, Texture, Loader, Container } from 'pixi.js';
+import NewBlocksRow from './NewBlocksRow';
 
-// Images
+// Tiles
 import basicTile from '../assets/bg_basic_tile.png';
 import explosion5Tile from '../assets/bg_explosion_5.png';
 import startingPointRightTile from '../assets/starting_point_right.png';
@@ -29,6 +30,8 @@ export default class Grid {
 
     // Blocked cells
     this.blockedCells = [];
+
+    this.newBlocksRow = new NewBlocksRow({ app, grid: this });
   }
 
   async init() {
@@ -52,22 +55,13 @@ export default class Grid {
         basicTileSprite.x = col * this.spriteWidth * this.spriteScale;
         basicTileSprite.y = row * this.spriteHeight * this.spriteScale;
 
-        // Make the sprite interactive
-        basicTileSprite.interactive = true;
-        basicTileSprite.buttonMode = true;
-
         // 5% chance to create blocked spots
         if (Math.random() < 0.05) {
           basicTileSprite.texture = blockedTileTexture;
-          console.log(row, col);
           this.blockedCells.push({ row, col });
-          basicTileSprite.interactive = false;
-          basicTileSprite.buttonMode = false;
         } else {
-          // Make the sprite interactive if it's not blocked
           basicTileSprite.interactive = true;
           basicTileSprite.buttonMode = true;
-          basicTileSprite.on('pointerdown', () => this.onPointerDown(basicTileSprite));
         }
 
         // Add the sprite to the container
@@ -82,17 +76,42 @@ export default class Grid {
       }
     }
 
+    this.placeStartingPoint(startingPointTexture);
+
     // Center gridContainer
     this.gridContainer.x = (this.app.renderer.width - this.gridContainer.width) / 2;
     this.gridContainer.y = (this.app.renderer.height - this.gridContainer.height) / 2;
   }
 
   // TODO: Pass more than one starting point direction
-  placeStartingPoint(startingPointTexture) {}
+  placeStartingPoint(startingPointTexture) {
+    let validStartPosition = false;
+    let startRow, startCol;
+
+    while (!validStartPosition) {
+      // Randomly select a row and column (but not the last row)
+      startRow = Math.floor(Math.random() * (this.gridRows - 1)); // Don't select the last row
+      startCol = Math.floor(Math.random() * (this.gridCols - 1)); // Can remove -1 if i add more sprites
+
+      // Check if the cell below is blocked or if the right cell is blocked or if it's in the last row
+      const isBlockedBelow = this.blockedCells.some((cell) => cell.row === startRow + 1 && cell.col === startCol);
+      const isBlockedRight = this.blockedCells.some((cell) => cell.row === startRow && cell.col === startCol + 1);
+
+      if (!isBlockedBelow && !isBlockedRight && startCol < this.gridCols - 1) {
+        validStartPosition = true;
+      }
+    }
+
+    const startingTile = this.gridContainer.getChildAt(startRow * this.gridCols + startCol);
+    startingTile.texture = startingPointTexture;
+    startingTile.interactive = false;
+    startingTile.buttonMode = false;
+  }
 
   // Handle the click on the grid tile
   onPointerDown = (event, newTexture) => {
     const sprite = event.currentTarget;
-    sprite.texture = newTexture;
+    sprite.texture = this.newBlocksRow.replaceTileInGrid();
+    this.newBlocksRow.shiftToLeft();
   };
 }
