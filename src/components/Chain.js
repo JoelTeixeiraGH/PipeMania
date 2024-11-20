@@ -9,28 +9,8 @@ export default class Chain extends Tile {
       label: 'chain',
     });
 
-    // These two, maybe can pass to the tile class
-    this.interactive = true;
-    this.buttonMode = true;
+    this.makeInteractive();
 
     this.loadTexture(chain);
-
-    this.on('pointerdown', (event) => this.onPointerDown(event));
   }
-
-  onPointerDown(event) {
-    console.log('cliquei');
-  }
-
-  /*  onPointerDown(event, newTexture) {
-    const tile = event.currentTarget;
-    const newTile = this.newBlocksRow.replaceTileInGrid();
-
-    // Update the clicked tile
-    tile.texture = newTile.texture;
-    tile.label = newTile.label;
-
-    // Shift new blocks row to the left
-    this.newBlocksRow.shiftToLeft();
-  } */
 }

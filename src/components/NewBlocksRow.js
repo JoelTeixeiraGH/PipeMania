@@ -1,128 +1,106 @@
 import { Container, Assets } from 'pixi.js';
 import Tile from './Tile'; // Import the Tile class
 
-// Tile assets
-import pipeHorizontalTile from '../assets/pipe_horizontal.png';
-import pipeVerticalTile from '../assets/pipe_vertical.png';
-import pipeTJunctionTile from '../assets/pipe_tjunction.png';
-import pipeCircleDownLeftTile from '../assets/pipe_circle_downleft.png';
-import pipeCircleDownRightTile from '../assets/pipe_circle_downright.png';
-import pipeCircleTopLeftTile from '../assets/pipe_circle_topleft.png';
-import pipeCircleTopRightTile from '../assets/pipe_circle_topright.png';
+import pipeCircleDownLeft from '../components/pipes/PipeCircleDownLeft';
+import pipeCircleDownRight from '../components/pipes/PipeCircleDownRight';
+import pipeCircleUpLeft from '../components/pipes/PipeCircleTopLeft';
+import pipeCircleUpRight from '../components/pipes/PipeCircleTopRight';
+import pipeHorizontal from '../components/pipes/PipeHorizontal';
+import pipeVertical from '../components/pipes/PipeVertical';
+import pipeTJunction from '../components/pipes/PipeTJunction';
 
 export default class NewBlocksRow {
   constructor({ app, grid }) {
     this.app = app;
     this.grid = grid;
     this.container = new Container();
+
+    // Calculate position relative to the grid
+    const gridLeftEdge = this.grid.gridContainer.x;
+    const gridTopEdge = this.grid.gridContainer.y;
+    const padding = 20; // Space between grid and NewBlocksRow
+    const newBlocksWidth = this.grid.spriteWidth * this.grid.spriteScale; // Width of one tile
+
+    // Position the container to the left of the grid
+    this.container.x = gridLeftEdge - newBlocksWidth - padding;
+    this.container.y = gridTopEdge + 2 * this.grid.spriteHeight * this.grid.spriteScale; // Adjust this multiplier to move up/down
+
     app.stage.addChild(this.container);
 
     this.tiles = []; // Stores the 5 Tile instances
-    this.tileTextures = {}; // Stores textures for the new tiles
 
-    // Load textures for tiles
-    this.loadTextures();
+    // Define available pipe types
+    this.pipeTypes = [
+      pipeCircleDownLeft,
+      pipeCircleDownRight,
+      pipeCircleUpLeft,
+      pipeCircleUpRight,
+      pipeHorizontal,
+      pipeVertical,
+      pipeTJunction,
+    ];
+
+    this.initializeTiles();
+    this.highlightFirstTile();
   }
 
-  async loadTextures() {
-    try {
-      // Load textures for the blocks
-      const pipeHorizontalTexture = await Assets.load(pipeHorizontalTile);
-      pipeHorizontalTexture.source.scaleMode = 'nearest';
-      const pipeVerticalTexture = await Assets.load(pipeVerticalTile);
-      pipeVerticalTexture.source.scaleMode = 'nearest';
-      const pipeTJunctionTexture = await Assets.load(pipeTJunctionTile);
-      pipeTJunctionTexture.source.scaleMode = 'nearest';
-      const pipeCircleDownLeftTexture = await Assets.load(pipeCircleDownLeftTile);
-      pipeCircleDownLeftTexture.source.scaleMode = 'nearest';
-      const pipeCircleDownRightTexture = await Assets.load(pipeCircleDownRightTile);
-      pipeCircleDownRightTexture.source.scaleMode = 'nearest';
-      const pipeCircleTopLeftTexture = await Assets.load(pipeCircleTopLeftTile);
-      pipeCircleTopLeftTexture.source.scaleMode = 'nearest';
-      const pipeCircleTopRightTexture = await Assets.load(pipeCircleTopRightTile);
-      pipeCircleTopRightTexture.source.scaleMode = 'nearest';
-
-      // Store textures
-      this.tileTextures = {
-        pipeHorizontal: pipeHorizontalTexture,
-        pipeVertical: pipeVerticalTexture,
-        pipeTJunction: pipeTJunctionTexture,
-        pipeCircleDownLeft: pipeCircleDownLeftTexture,
-        pipeCircleDownRight: pipeCircleDownRightTexture,
-        pipeCircleTopLeft: pipeCircleTopLeftTexture,
-        pipeCircleTopRight: pipeCircleTopRightTexture,
-      };
-
-      // Create Tile objects
-      this.createTiles();
-    } catch (error) {
-      console.error('Failed to load textures:', error);
-    }
-  }
-
-  createTiles() {
-    // Create 5 Tile instances for the row
+  initializeTiles() {
     for (let i = 0; i < 5; i++) {
-      const textureKey = Object.keys(this.tileTextures)[
-        Math.floor(Math.random() * Object.keys(this.tileTextures).length)
-      ];
-      const texture = this.tileTextures[textureKey];
+      const PipeClass = this.pipeTypes[Math.floor(Math.random() * this.pipeTypes.length)];
 
-      // Create a Tile instance
-      const tile = new Tile({
-        texture,
-        row: 0, // Row is irrelevant for new blocks row
-        col: i, // Track column index for organizational purposes
-        label: textureKey,
+      const tile = new PipeClass({
+        row: 0,
+        col: i,
       });
 
-      // Scale and position the tile
       tile.scale.set(this.grid.spriteScale);
-      tile.x = 0; // Stack in the same vertical column
+      tile.x = 0;
       tile.y = (4 - i) * this.grid.spriteHeight * this.grid.spriteScale;
 
-      // Add the tile to the container
       this.container.addChild(tile);
-
-      // Store the Tile instance
       this.tiles.push(tile);
     }
-
-    // Highlight the first tile
-    this.highlightSelectedTile();
   }
 
-  highlightSelectedTile() {
-    // Reset tints for all tiles
-    this.tiles.forEach((tile) => (tile.tint = 0xffffff));
+  highlightFirstTile() {
+    // Remove highlight from all tiles
+    this.tiles.forEach((tile) => {
+      tile.alpha = 0.7; // Dim all tiles
+      tile.scale.set(this.grid.spriteScale); // Reset scale
+    });
 
-    // Highlight the first tile
+    // Highlight the first tile if it exists
     if (this.tiles[0]) {
-      this.tiles[0].tint = 0xffff00; // Yellow highlight
+      this.tiles[0].alpha = 1; // Full opacity
+      // Optional: slightly larger scale for the first tile
+      this.tiles[0].scale.set(this.grid.spriteScale * 1.1);
     }
   }
 
-  replaceTileInGrid() {
-    // Return the first tile (selected) in the new blocks row
-    return this.tiles[0];
-  }
+  shiftTilesUp() {
+    const removedTile = this.tiles.shift();
+    this.container.removeChild(removedTile);
 
-  shiftToLeft() {
-    // Shift textures left in the tiles array
-    for (let i = 0; i < 4; i++) {
-      this.tiles[i].texture = this.tiles[i + 1].texture;
-      this.tiles[i].label = this.tiles[i + 1].label;
-    }
+    // Move remaining tiles up
+    this.tiles.forEach((tile, index) => {
+      tile.y = (4 - index) * this.grid.spriteHeight * this.grid.spriteScale;
+    });
 
-    // Generate a new random tile for the rightmost position
-    const textureKeys = Object.keys(this.tileTextures);
-    const randomTextureKey = textureKeys[Math.floor(Math.random() * textureKeys.length)];
-    const newTexture = this.tileTextures[randomTextureKey];
+    // Create new tile at bottom
+    const PipeClass = this.pipeTypes[Math.floor(Math.random() * this.pipeTypes.length)];
 
-    this.tiles[4].texture = newTexture;
-    this.tiles[4].label = randomTextureKey;
+    const newTile = new PipeClass({
+      row: 0,
+      col: 4,
+    });
 
-    // Update highlight
-    this.highlightSelectedTile();
+    newTile.scale.set(this.grid.spriteScale);
+    newTile.x = 0;
+    newTile.y = 0;
+
+    this.container.addChild(newTile);
+    this.tiles.push(newTile);
+
+    this.highlightFirstTile();
   }
 }

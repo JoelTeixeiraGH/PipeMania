@@ -5,10 +5,6 @@ export default class Tile extends Sprite {
     this.row = row;
     this.col = col;
     this.label = label;
-
-    // Optional: Initialize other properties
-    this.isBlocked = false; // ??
-    this.isFilled = false; // ???
   }
 
   async loadTexture(texturePath) {
@@ -27,5 +23,13 @@ export default class Tile extends Sprite {
 
   fillWithWater() {
     this.tint = 0x0096ff;
+  }
+
+  makeInteractive() {
+    this.eventMode = 'static';
+    this.cursor = 'pointer';
+    this.on('pointerdown', () => {
+      this.emit('tile:clicked', this);
+    });
   }
 }

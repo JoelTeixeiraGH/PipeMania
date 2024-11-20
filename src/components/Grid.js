@@ -36,11 +36,14 @@ export default class Grid {
     // Other properties
     this.blockedCells = [];
     this.startingPoint = null;
-    this.newBlocksRow = new NewBlocksRow({ app, grid: this });
+    this.newBlocksRow = null;
+    this.tiles = Array(this.gridRows)
+      .fill()
+      .map(() => Array(this.gridCols).fill(null));
   }
 
   async init() {
-    // Create grid tiles
+    // Initialize grid first
     for (let row = 0; row < this.gridRows; row++) {
       for (let col = 0; col < this.gridCols; col++) {
         let tile;
@@ -49,7 +52,9 @@ export default class Grid {
           tile = new PathBlocker(row, col); // Create a PathBlocker object
           this.blockedCells.push({ row, col }); // Track blocked cells
         } else {
-          tile = new Chain(row, col); // Create a Chain object
+          tile = new Chain(row, col);
+          // Add click listener for replaceable tiles
+          tile.on('tile:clicked', (clickedTile) => this.handleTileReplacement(clickedTile));
         }
 
         // Scale and position the tile
@@ -58,15 +63,22 @@ export default class Grid {
         tile.y = row * this.spriteHeight * this.spriteScale;
 
         this.gridContainer.addChild(tile);
+        this.tiles[row][col] = tile;
       }
     }
 
     this.startingPoint = this.placeStartingPoint();
     this.gridContainer.addChild(this.startingPoint);
 
-    // Center the grid on the screen
+    // Center the grid
     this.gridContainer.x = (this.app.renderer.width - this.gridContainer.width) / 2;
     this.gridContainer.y = (this.app.renderer.height - this.gridContainer.height) / 2;
+
+    // Create NewBlocksRow after grid is positioned
+    this.newBlocksRow = new NewBlocksRow({
+      app: this.app,
+      grid: this,
+    });
   }
 
   placeStartingPoint() {
@@ -107,7 +119,49 @@ export default class Grid {
     if (row < 0 || row >= this.gridRows || col < 0 || col >= this.gridCols) {
       return null; // Return null if out of bounds
     }
-    const index = row * this.gridCols + col;
-    return this.gridContainer.getChildAt(index); // This will return a Tile instance
+    return this.tiles[row][col];
+  }
+
+  handleTileReplacement(clickedTile) {
+    if (clickedTile instanceof PathBlocker || clickedTile instanceof StartingPointRight) {
+      return;
+    }
+
+    const replacementTile = this.newBlocksRow.tiles[0];
+    if (!replacementTile) return;
+
+    const row = clickedTile.row;
+    const col = clickedTile.col;
+
+    // Remove old tile
+    this.gridContainer.removeChild(clickedTile);
+    this.tiles[row][col] = null;
+
+    // Create new pipe with correct row and col
+    const NewPipeClass = replacementTile.constructor;
+    const newTile = new NewPipeClass({
+      row: row, // Make sure these are passed correctly
+      col: col,
+      label: replacementTile.label,
+    });
+
+    // Store row and col directly on the tile instance
+    newTile.row = row;
+    newTile.col = col;
+
+    // Setup new tile
+    newTile.scale.set(this.spriteScale);
+    newTile.x = col * this.spriteWidth * this.spriteScale;
+    newTile.y = row * this.spriteHeight * this.spriteScale;
+
+    // Add click listener for the new pipe
+    newTile.on('tile:clicked', (tile) => this.handleTileReplacement(tile));
+
+    // Add to grid
+    this.gridContainer.addChild(newTile);
+    this.tiles[row][col] = newTile;
+
+    // Update NewBlocksRow
+    this.newBlocksRow.shiftTilesUp();
   }
 }
