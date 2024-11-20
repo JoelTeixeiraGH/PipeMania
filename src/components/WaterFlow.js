@@ -312,6 +312,9 @@ export default class WaterFlow {
     this.hasWon = wonGame;
     Ticker.shared.remove(this.updateWaterFlow);
 
+    // Set grid's gameOver flag
+    this.grid.gameOver = true;
+
     // Create and show game over animation
     this.showGameOverAnimation(wonGame);
   }

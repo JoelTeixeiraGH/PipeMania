@@ -35,6 +35,7 @@ export default class Grid {
     this.tiles = Array(this.gridRows)
       .fill()
       .map(() => Array(this.gridCols).fill(null));
+    this.gameOver = false;
   }
 
   async init() {
@@ -118,6 +119,11 @@ export default class Grid {
   }
 
   handleTileReplacement(clickedTile) {
+    // Check if game is over first
+    if (this.gameOver) {
+      return;
+    }
+
     if (clickedTile instanceof PathBlocker || clickedTile instanceof StartingPointRight) {
       return;
     }
