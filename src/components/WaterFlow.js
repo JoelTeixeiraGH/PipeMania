@@ -185,7 +185,7 @@ export default class WaterFlow {
 
     // When current pipe is full
     if (this.fillProgress >= 1) {
-      this.currentTile.isFilled = true;
+      this.currentTile.setFilled();
       this.currentDistance++; // Increment distance counter
       this.updateDistanceText(); // Update the distance display
 
