@@ -11,8 +11,7 @@ export default class StartingPointRight extends Pipe {
     });
 
     this.canFlowRight = true;
-    this.eventMode = 'static';
-    this.cursor = 'not-allowed';
+
     this.loadTexture(startingPointRight);
 
     this.makeInteractive();

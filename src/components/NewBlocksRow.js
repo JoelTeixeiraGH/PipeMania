@@ -1,6 +1,5 @@
 import { Container, Assets } from 'pixi.js';
-import Tile from './Tile'; // Import the Tile class
-
+import Tile from './Tile';
 import pipeCircleDownLeft from '../components/pipes/PipeCircleDownLeft';
 import pipeCircleDownRight from '../components/pipes/PipeCircleDownRight';
 import pipeCircleUpLeft from '../components/pipes/PipeCircleTopLeft';
@@ -23,7 +22,7 @@ export default class NewBlocksRow {
 
     // Position the container to the left of the grid
     this.container.x = gridLeftEdge - newBlocksWidth - padding;
-    this.container.y = gridTopEdge + 2 * this.grid.spriteHeight * this.grid.spriteScale; // Adjust this multiplier to move up/down
+    this.container.y = gridTopEdge + 2 * this.grid.spriteHeight * this.grid.spriteScale;
 
     app.stage.addChild(this.container);
 
@@ -72,7 +71,6 @@ export default class NewBlocksRow {
     // Highlight the first tile if it exists
     if (this.tiles[0]) {
       this.tiles[0].alpha = 1; // Full opacity
-      // Optional: slightly larger scale for the first tile
       this.tiles[0].scale.set(this.grid.spriteScale * 1.1);
     }
   }

@@ -36,6 +36,8 @@ export default class Grid {
       .fill()
       .map(() => Array(this.gridCols).fill(null));
     this.gameOver = false;
+
+    this.blockTileChance = 0.05;
   }
 
   async init() {
@@ -44,7 +46,7 @@ export default class Grid {
       for (let col = 0; col < this.gridCols; col++) {
         let tile;
         // Randomly decide if the tile should be a PathBlocker
-        if (Math.random() < 0.05) {
+        if (Math.random() < this.blockTileChance) {
           tile = new PathBlocker(row, col); // Create a PathBlocker object
           this.blockedCells.push({ row, col }); // Track blocked cells
         } else {
@@ -140,14 +142,14 @@ export default class Grid {
       if (clickedTile.alpha <= 0) {
         this.gridContainer.removeChild(clickedTile);
         this.tiles[row][col] = null;
-        placenewTile();
+        placeNewTile();
       } else {
         requestAnimationFrame(fadeOutOldTile);
       }
     };
 
     // Place new tile with animation
-    const placenewTile = () => {
+    const placeNewTile = () => {
       const NewPipeClass = replacementTile.constructor;
       const newTile = new NewPipeClass({
         row: row,

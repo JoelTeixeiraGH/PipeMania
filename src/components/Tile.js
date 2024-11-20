@@ -14,18 +14,6 @@ export default class Tile extends Sprite {
     this.texture = texture;
   }
 
-  highlight() {
-    this.tint = 0xffff00;
-  }
-
-  resetHighlight() {
-    this.tint = 0xffffff;
-  }
-
-  fillWithWater() {
-    this.tint = 0x0096ff;
-  }
-
   makeInteractive() {
     this.eventMode = 'static';
     this.cursor = 'pointer';
