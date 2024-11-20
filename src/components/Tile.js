@@ -5,6 +5,7 @@ export default class Tile extends Sprite {
     this.row = row;
     this.col = col;
     this.label = label;
+    this.isShaking = false;
   }
 
   async loadTexture(texturePath) {
@@ -14,11 +15,11 @@ export default class Tile extends Sprite {
   }
 
   highlight() {
-    this.tint = 0xffff00; // Apply a color tint
+    this.tint = 0xffff00;
   }
 
   resetHighlight() {
-    this.tint = 0xffffff; // Reset to white
+    this.tint = 0xffffff;
   }
 
   fillWithWater() {
@@ -34,16 +35,26 @@ export default class Tile extends Sprite {
   }
 
   showLockedFeedback() {
+    if (this.isShaking) return;
+
+    this.isShaking = true;
     const originalX = this.x;
     const shake = 3;
     const duration = 100;
 
-    this.x += shake;
-    setTimeout(() => {
-      this.x = originalX - shake;
+    const shakeSequence = () => {
+      this.x = originalX + shake;
+
       setTimeout(() => {
-        this.x = originalX;
+        this.x = originalX - shake;
+
+        setTimeout(() => {
+          this.x = originalX;
+          this.isShaking = false;
+        }, duration / 2);
       }, duration / 2);
-    }, duration / 2);
+    };
+
+    shakeSequence();
   }
 }

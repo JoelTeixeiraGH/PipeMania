@@ -1,5 +1,6 @@
-import startingPointRight from '../../assets/starting_point_right.png';
+import { Texture } from 'pixi.js';
 import Pipe from './Pipe';
+import startingPointRight from '../../assets/starting_point_right.png';
 
 export default class StartingPointRight extends Pipe {
   constructor(row, col) {
@@ -10,10 +11,23 @@ export default class StartingPointRight extends Pipe {
     });
 
     this.canFlowRight = true;
-
-    this.interactive = false;
-    this.buttonMode = false;
-
+    this.eventMode = 'static';
+    this.cursor = 'not-allowed';
     this.loadTexture(startingPointRight);
+
+    this.makeInteractive();
+  }
+
+  makeInteractive() {
+    this.eventMode = 'static';
+    this.cursor = 'not-allowed';
+
+    this.on('pointerdown', () => {
+      this.showLockedFeedback();
+    });
+  }
+
+  isLocked() {
+    return true;
   }
 }
