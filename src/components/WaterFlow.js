@@ -1,4 +1,4 @@
-import { Container, Graphics, Ticker } from 'pixi.js';
+import { Container, Graphics, Ticker, Text, TextStyle } from 'pixi.js';
 import Pipe from './pipes/Pipe';
 
 export default class WaterFlow {
@@ -11,6 +11,18 @@ export default class WaterFlow {
 
     // Create preview
     this.setupPreview();
+
+    // Add distance goal properties
+    this.targetDistance = this.generateTargetDistance();
+    this.currentDistance = 0;
+
+    // Add status
+    this.hasWon = false;
+
+    // Create UI container
+    this.uiContainer = new Container();
+    this.setupDistanceDisplay();
+    this.grid.app.stage.addChild(this.uiContainer);
   }
 
   setupPreview() {
@@ -143,11 +155,9 @@ export default class WaterFlow {
   }
 
   startWaterFlow() {
-    console.log('Starting water flow');
     this.currentTile = this.grid.startingPoint;
 
     if (!this.currentTile) {
-      console.error('No starting point found!');
       return;
     }
 
@@ -158,7 +168,6 @@ export default class WaterFlow {
 
   updateWaterFlow = () => {
     if (!this.currentTile || this.gameOver) {
-      console.log('No current tile or game is over');
       return;
     }
 
@@ -176,15 +185,23 @@ export default class WaterFlow {
 
     // When current pipe is full
     if (this.fillProgress >= 1) {
-      console.log('Pipe full, finding next pipe');
       this.currentTile.isFilled = true;
+      this.currentDistance++; // Increment distance counter
+      this.updateDistanceText(); // Update the distance display
+
       this.fillProgress = 0;
       this.lastTime = Date.now();
+
+      // Check if target distance reached
+      if (this.currentDistance >= this.targetDistance) {
+        this.handleWin();
+        return;
+      }
 
       const nextTile = this.findNextPipe();
 
       if (!nextTile) {
-        this.handleGameOver();
+        this.handleGameOver(false); // Lost due to no valid path
         return;
       }
 
@@ -240,20 +257,13 @@ export default class WaterFlow {
       }
     }
 
-    console.log('Found possible moves:', possibleMoves);
-
     // Try each possible move
     for (const { tile, direction } of possibleMoves) {
       if (this.canConnect(this.currentTile, tile, direction)) {
-        console.log('Found valid next pipe:', {
-          direction,
-          type: tile.constructor.name,
-        });
         return tile;
       }
     }
 
-    console.log('No valid next pipe found');
     return null;
   }
 
@@ -292,10 +302,179 @@ export default class WaterFlow {
     return (r << 16) | (g << 8) | b;
   }
 
-  handleGameOver() {
+  handleGameOver(wonGame = false) {
     this.gameOver = true;
+    this.hasWon = wonGame;
     Ticker.shared.remove(this.updateWaterFlow);
-    this.grid.emit('gameOver');
-    console.log('Game Over - Water cannot flow further!');
+
+    // Create and show game over animation
+    this.showGameOverAnimation(wonGame);
+  }
+
+  showGameOverAnimation(wonGame) {
+    const animContainer = new Container();
+    this.grid.app.stage.addChild(animContainer);
+
+    // Dark industrial overlay
+    const overlay = new Graphics()
+      .fill({ color: 0x111111, alpha: 0.85 })
+      .rect(0, 0, this.grid.app.screen.width, this.grid.app.screen.height);
+    animContainer.addChild(overlay);
+
+    // Industrial message style
+    const messageStyle = {
+      fontFamily: 'Impact',
+      fontSize: 64,
+      fontWeight: 'bold',
+      fill: wonGame ? '#FFD700' : '#FF3333',
+      stroke: {
+        color: '#2A2A2A',
+        width: 6,
+      },
+      dropShadow: true,
+      dropShadowColor: '#000000',
+      dropShadowBlur: 4,
+      dropShadowAngle: Math.PI / 3,
+      dropShadowDistance: 6,
+      letterSpacing: 4,
+      lineJoin: 'bevel',
+    };
+
+    const message = new Text({
+      text: wonGame ? 'MISSION COMPLETE' : 'SYSTEM FAILURE',
+      style: messageStyle,
+    });
+
+    message.anchor.set(0.5);
+    message.position.set(this.grid.app.screen.width / 2, this.grid.app.screen.height / 2 - 20);
+
+    message.scale.set(0);
+    animContainer.addChild(message);
+
+    // Animate message
+    let scale = 0;
+    const animate = () => {
+      if (scale < 1) {
+        scale += 0.05;
+        message.scale.set(scale);
+        requestAnimationFrame(animate);
+      }
+    };
+    animate();
+
+    // Industrial stats style
+    const statsStyle = {
+      fontFamily: 'Impact',
+      fontSize: 28,
+      fill: '#A4A4A4',
+      stroke: {
+        color: '#2A2A2A',
+        width: 2,
+      },
+      dropShadow: true,
+      dropShadowColor: '#000000',
+      dropShadowBlur: 2,
+      dropShadowAngle: Math.PI / 3,
+      dropShadowDistance: 3,
+      letterSpacing: 2,
+    };
+
+    const statsText = new Text({
+      text: wonGame
+        ? `PIPES CONNECTED: ${this.currentDistance}`
+        : `SYSTEM HALT AT: ${this.currentDistance}/${this.targetDistance}`,
+      style: statsStyle,
+    });
+
+    statsText.anchor.set(0.5);
+    statsText.position.set(this.grid.app.screen.width / 2, message.y + message.height + 40);
+    statsText.alpha = 0;
+    animContainer.addChild(statsText);
+
+    // Fade in stats text
+    const fadeInStats = () => {
+      if (statsText.alpha < 1) {
+        statsText.alpha += 0.05;
+        requestAnimationFrame(fadeInStats);
+      }
+    };
+    setTimeout(fadeInStats, 500);
+
+    // Add metallic shine effect for win
+    if (wonGame) {
+      const shine = new Graphics().fill({ color: 0xffffff, alpha: 0.3 }).circle(0, 0, 120);
+
+      shine.position.set(message.x, message.y);
+      shine.scale.set(0);
+      animContainer.addChildAt(shine, 0);
+
+      // Animate shine with metallic effect
+      let shineScale = 0;
+      const animateShine = () => {
+        if (shineScale < 2) {
+          shineScale += 0.04;
+          shine.scale.set(shineScale);
+          shine.alpha = Math.max(0, 0.3 - shineScale / 4);
+          requestAnimationFrame(animateShine);
+        }
+      };
+      setTimeout(animateShine, 200);
+    }
+  }
+
+  handleWin() {
+    this.handleGameOver(true);
+  }
+
+  // Add method to get current progress
+  getProgress() {
+    return {
+      current: this.currentDistance,
+      target: this.targetDistance,
+      percentage: (this.currentDistance / this.targetDistance) * 100,
+    };
+  }
+
+  generateTargetDistance() {
+    // Generate random number between 15-20
+    return Math.floor(Math.random() * (20 - 15 + 1)) + 15;
+  }
+
+  setupDistanceDisplay() {
+    const textStyle = {
+      fontFamily: 'Impact',
+      fontSize: 32,
+      fill: '#FFD700',
+      stroke: {
+        color: '#2A2A2A',
+        width: 4,
+      },
+      dropShadow: true,
+      dropShadowColor: '#000000',
+      dropShadowBlur: 2,
+      dropShadowAngle: Math.PI / 3,
+      dropShadowDistance: 3,
+      letterSpacing: 2,
+      lineJoin: 'bevel',
+    };
+
+    this.distanceText = new Text({
+      text: '',
+      style: textStyle,
+    });
+
+    // Center based on grid position
+    this.distanceText.anchor.set(0.5, 0);
+    this.distanceText.position.set(
+      this.grid.gridContainer.x + (this.grid.gridCols * this.grid.spriteWidth * this.grid.spriteScale) / 2,
+      20
+    );
+
+    this.updateDistanceText();
+    this.uiContainer.addChild(this.distanceText);
+  }
+
+  updateDistanceText() {
+    this.distanceText.text = `DISTANCE: ${this.currentDistance}/${this.targetDistance}`;
   }
 }
