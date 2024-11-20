@@ -1,4 +1,4 @@
-import pipeVerticalTexture from '../../assets/pipe_vertical.png';
+import pipeTJunctionTexture from '../../assets/pipe_tjunction.png';
 import Pipe from './Pipe';
 
 export default class PipeTJunction extends Pipe {
@@ -7,11 +7,13 @@ export default class PipeTJunction extends Pipe {
       row: row,
       col: col,
       label: 'pipeTJunction',
-      canFlowUp: true,
-      canFlowDown: true,
-      canFlowLeft: true,
-      canFlowRight: true,
     });
-    this.loadTexture(pipeVerticalTexture);
+
+    this.canFlowUp = true;
+    this.canFlowDown = true;
+    this.canFlowLeft = true;
+    this.canFlowRight = true;
+
+    this.loadTexture(pipeTJunctionTexture);
   }
 }

@@ -7,9 +7,11 @@ export default class PipeCircleTopRight extends Pipe {
       row: row,
       col: col,
       label: 'pipeCircleTopRight',
-      canFlowUp: true,
-      canFlowRight: true,
     });
+
+    this.canFlowDown = true;
+    this.canFlowLeft = true;
+
     this.loadTexture(pipeCircleTopRightTexture);
   }
 }

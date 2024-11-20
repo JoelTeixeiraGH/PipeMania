@@ -9,6 +9,7 @@ export default class Pipe extends Tile {
     this.canFlowDown = false;
     this.canFlowLeft = false;
     this.canFlowRight = false;
+    this.isFilled = false;
     this.makeInteractive();
   }
 }

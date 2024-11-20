@@ -1,15 +1,13 @@
-import pipeVerticalTexture from '../../assets/pipe_vertical.png';
+import pipeVertical from '../../assets/pipe_vertical.png';
 import Pipe from './Pipe';
 
 export default class PipeVertical extends Pipe {
   constructor(row, col) {
-    super({
-      row: row,
-      col: col,
-      label: 'pipeHorizontal',
-      canFlowUp: true,
-      canFlowDown: true,
-    });
-    this.loadTexture(pipeVerticalTexture);
+    super({ row, col, label: 'pipeVertical' });
+
+    this.canFlowUp = true;
+    this.canFlowDown = true;
+
+    this.loadTexture(pipeVertical);
   }
 }

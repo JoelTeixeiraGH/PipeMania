@@ -7,11 +7,9 @@ export default class StartingPointRight extends Pipe {
       row: row,
       col: col,
       label: 'startingPointRight',
-      up: false,
-      down: false,
-      left: false,
-      right: true,
     });
+
+    this.canFlowRight = true;
 
     this.interactive = false;
     this.buttonMode = false;
