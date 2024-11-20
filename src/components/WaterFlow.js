@@ -210,6 +210,11 @@ export default class WaterFlow {
   };
 
   fillPipe(pipe, fillAmount) {
+    // Mark pipe as flowing when filling starts
+    if (fillAmount > 0 && !pipe.isFlowing) {
+      pipe.startFlowing();
+    }
+
     const waterColor = 0x0099ff;
     const startColor = 0xffffff;
 

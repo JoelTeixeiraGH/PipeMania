@@ -8,6 +8,7 @@ export default class Pipe extends Tile {
     this.canFlowLeft = false;
     this.canFlowRight = false;
     this.isFilled = false;
+    this.isFlowing = false;
     this.makeInteractive();
   }
 
@@ -16,7 +17,7 @@ export default class Pipe extends Tile {
     this.cursor = 'pointer';
 
     this.on('pointerdown', () => {
-      if (this.isFilled) {
+      if (this.isFilled || this.isFlowing) {
         this.showLockedFeedback();
         return;
       }
@@ -25,11 +26,24 @@ export default class Pipe extends Tile {
   }
 
   isLocked() {
-    return this.isFilled;
+    return this.isFilled || this.isFlowing;
   }
 
   setFilled() {
     this.isFilled = true;
+    this.isFlowing = false;
     this.cursor = 'not-allowed';
+  }
+
+  startFlowing() {
+    this.isFlowing = true;
+    this.cursor = 'not-allowed';
+  }
+
+  stopFlowing() {
+    this.isFlowing = false;
+    if (!this.isFilled) {
+      this.cursor = 'pointer';
+    }
   }
 }
