@@ -32,4 +32,18 @@ export default class Tile extends Sprite {
       this.emit('tile:clicked', this);
     });
   }
+
+  showLockedFeedback() {
+    const originalX = this.x;
+    const shake = 3;
+    const duration = 100;
+
+    this.x += shake;
+    setTimeout(() => {
+      this.x = originalX - shake;
+      setTimeout(() => {
+        this.x = originalX;
+      }, duration / 2);
+    }, duration / 2);
+  }
 }

@@ -8,8 +8,12 @@ export default class PathBlocker extends Tile {
       col: col,
       label: 'pathBlocker',
     });
-    this.interactive = false;
-    this.buttonMode = false;
+    this.interactive = true;
+    this.cursor = 'not-allowed';
     this.loadTexture(pathBlockerTexture);
+
+    this.on('pointerdown', () => {
+      this.showLockedFeedback();
+    });
   }
 }

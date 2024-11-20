@@ -20,15 +20,11 @@ export default class Pipe extends Tile {
     this.on('pointerdown', () => {
       // Don't allow interaction if pipe is filled
       if (this.isFilled) {
-        // Optional: Add visual or sound feedback that pipe can't be changed
         this.showLockedFeedback();
         return;
       }
 
-      this.emit('pipeClicked', {
-        row: this.row,
-        col: this.col,
-      });
+      this.emit('tile:clicked', this);
     });
   }
 

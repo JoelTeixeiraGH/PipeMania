@@ -1,17 +1,11 @@
 import { Container, Assets } from 'pixi.js';
-import Tile from './Tile'; // Import the Tile class
+import Tile from './Tile';
 import Chain from './Chain';
 import PathBlocker from './PathBlocker';
 
 import NewBlocksRow from './NewBlocksRow';
 import PipeVertical from './pipes/PipeVertical';
 import StartingPointRight from './pipes/StartingPointRight';
-
-// Tiles
-import basicTile from '../assets/bg_basic_tile.png';
-import explosion5Tile from '../assets/bg_explosion_5.png';
-import startingPointRightTile from '../assets/starting_point_right.png';
-import blockedTile from '../assets/blocked_tile.png';
 
 export default class Grid {
   constructor({ app }) {
@@ -140,21 +134,19 @@ export default class Grid {
     // Create new pipe with correct row and col
     const NewPipeClass = replacementTile.constructor;
     const newTile = new NewPipeClass({
-      row: row, // Make sure these are passed correctly
+      row: row,
       col: col,
       label: replacementTile.label,
     });
 
-    // Store row and col directly on the tile instance
+    // Setup new tile
     newTile.row = row;
     newTile.col = col;
-
-    // Setup new tile
     newTile.scale.set(this.spriteScale);
     newTile.x = col * this.spriteWidth * this.spriteScale;
     newTile.y = row * this.spriteHeight * this.spriteScale;
 
-    // Add click listener for the new pipe
+    // Make sure the new tile uses the same event name
     newTile.on('tile:clicked', (tile) => this.handleTileReplacement(tile));
 
     // Add to grid
