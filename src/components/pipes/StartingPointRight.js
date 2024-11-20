@@ -11,14 +11,9 @@ export default class StartingPointRight extends Pipe {
 
     this.canFlowRight = true;
 
-    this.interactive = true;
-    this.cursor = 'not-allowed';
+    this.interactive = false;
+    this.buttonMode = false;
 
     this.loadTexture(startingPointRight);
-
-    // Add click handler that shows the shake
-    this.on('pointerdown', () => {
-      this.showLockedFeedback();
-    });
   }
 }

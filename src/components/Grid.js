@@ -1,4 +1,5 @@
-import { Container, Assets } from 'pixi.js';
+import { Container } from 'pixi.js';
+import { GlowFilter } from '@pixi/filter-glow';
 import Tile from './Tile';
 import Chain from './Chain';
 import PathBlocker from './PathBlocker';
@@ -127,31 +128,86 @@ export default class Grid {
     const row = clickedTile.row;
     const col = clickedTile.col;
 
-    // Remove old tile
-    this.gridContainer.removeChild(clickedTile);
-    this.tiles[row][col] = null;
+    // Remove old tile with fade out
+    const fadeOutOldTile = () => {
+      clickedTile.alpha -= 0.1;
+      if (clickedTile.alpha <= 0) {
+        this.gridContainer.removeChild(clickedTile);
+        this.tiles[row][col] = null;
+        placenewTile();
+      } else {
+        requestAnimationFrame(fadeOutOldTile);
+      }
+    };
 
-    // Create new pipe with correct row and col
-    const NewPipeClass = replacementTile.constructor;
-    const newTile = new NewPipeClass({
-      row: row,
-      col: col,
-      label: replacementTile.label,
-    });
+    // Place new tile with animation
+    const placenewTile = () => {
+      const NewPipeClass = replacementTile.constructor;
+      const newTile = new NewPipeClass({
+        row: row,
+        col: col,
+        label: replacementTile.label,
+      });
 
-    // Setup new tile
-    newTile.row = row;
-    newTile.col = col;
-    newTile.scale.set(this.spriteScale);
-    newTile.x = col * this.spriteWidth * this.spriteScale;
-    newTile.y = row * this.spriteHeight * this.spriteScale;
+      // Setup new tile
+      newTile.row = row;
+      newTile.col = col;
+      newTile.scale.set(0); // Start with scale 0 for pop effect
+      newTile.x = col * this.spriteWidth * this.spriteScale + (this.spriteWidth * this.spriteScale) / 2;
+      newTile.y = row * this.spriteHeight * this.spriteScale + (this.spriteHeight * this.spriteScale) / 2;
+      newTile.anchor.set(0.5); // Set anchor to center for better scaling
+      newTile.alpha = 0.8; // Start slightly transparent
 
-    // Make sure the new tile uses the same event name
-    newTile.on('tile:clicked', (tile) => this.handleTileReplacement(tile));
+      // Add glow filter
+      const glowFilter = new GlowFilter({
+        distance: 15,
+        outerStrength: 2,
+        innerStrength: 1,
+        color: 0x00ffff,
+        quality: 0.5,
+      });
+      newTile.filters = [glowFilter];
 
-    // Add to grid
-    this.gridContainer.addChild(newTile);
-    this.tiles[row][col] = newTile;
+      newTile.on('tile:clicked', (tile) => this.handleTileReplacement(tile));
+
+      this.gridContainer.addChild(newTile);
+      this.tiles[row][col] = newTile;
+
+      // Pop in animation
+      let scale = 0;
+      const animatePlace = () => {
+        scale += 0.15;
+        const currentScale = Math.min(this.spriteScale, this.spriteScale * (1 + Math.sin(scale) * 0.3));
+        newTile.scale.set(currentScale);
+        newTile.alpha = Math.min(1, newTile.alpha + 0.1);
+
+        if (scale <= Math.PI) {
+          requestAnimationFrame(animatePlace);
+        } else {
+          // Reset scale and position
+          newTile.scale.set(this.spriteScale);
+          newTile.x = col * this.spriteWidth * this.spriteScale;
+          newTile.y = row * this.spriteHeight * this.spriteScale;
+          newTile.anchor.set(0);
+
+          // Fade out glow
+          const fadeOutGlow = () => {
+            glowFilter.outerStrength -= 0.1;
+            if (glowFilter.outerStrength <= 0) {
+              newTile.filters = null;
+            } else {
+              requestAnimationFrame(fadeOutGlow);
+            }
+          };
+          setTimeout(fadeOutGlow, 200);
+        }
+      };
+
+      animatePlace();
+    };
+
+    // Start the animation sequence
+    fadeOutOldTile();
 
     // Update NewBlocksRow
     this.newBlocksRow.shiftTilesUp();
