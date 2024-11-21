@@ -138,7 +138,18 @@ export default class Grid {
 
     // Remove old tile with fade out
     const fadeOutOldTile = () => {
-      clickedTile.alpha -= 0.1;
+      const speed = 0.08;
+      clickedTile.alpha -= speed;
+
+      // First grow quickly, then shrink
+      if (clickedTile.alpha > 0.5) {
+        clickedTile.scale.x += speed;
+        clickedTile.scale.y += speed;
+      } else {
+        clickedTile.scale.x -= speed * 1.5;
+        clickedTile.scale.y -= speed * 1.5;
+      }
+
       if (clickedTile.alpha <= 0) {
         this.gridContainer.removeChild(clickedTile);
         this.tiles[row][col] = null;
