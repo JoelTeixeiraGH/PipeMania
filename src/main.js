@@ -1,14 +1,30 @@
 import { Application } from 'pixi.js';
-import Grid from './components/Grid';
-import WaterFlow from './components/WaterFlow';
+import { initGame } from './components/Game';
 
-const app = new Application();
+let app;
+let currentGame;
 
-await app.init();
-document.body.appendChild(app.canvas);
+async function init() {
+  // Create PixiJS application
+  app = new Application();
 
-const grid = new Grid({ app });
-await grid.init();
+  // Initialize the application
+  await app.init();
+  document.body.appendChild(app.canvas);
 
-// Initialize water flow after grid is ready
-const waterFlow = new WaterFlow({ grid });
+  // Start the game
+  startGame();
+}
+
+async function startGame() {
+  // Cleanup previous game if exists
+  if (currentGame) {
+    currentGame.destroy();
+  }
+
+  // Initialize new game
+  currentGame = await initGame(app);
+}
+
+// Start the application
+init().catch(console.error);
