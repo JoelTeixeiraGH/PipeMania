@@ -1,60 +1,29 @@
 import { Application } from 'pixi.js';
 import { initGame } from './components/Game';
-import MainMenu from './components/ui/MainMenu';
 
 let app;
-let currentScreen;
+let currentGame;
 
 async function init() {
   // Create PixiJS application
-  app = new Application({
-    width: window.innerWidth,
-    height: window.innerHeight,
-    backgroundColor: 0x111111,
-  });
+  app = new Application();
 
   // Initialize the application
   await app.init();
   document.body.appendChild(app.canvas);
 
-  // Show main menu first
-  showMainMenu();
-
-  // Handle window resize
-  window.addEventListener('resize', handleResize);
-}
-
-function handleResize() {
-  app.renderer.resize(window.innerWidth, window.innerHeight);
-
-  if (currentScreen) {
-    if (currentScreen instanceof MainMenu) {
-      showMainMenu(); // Recreate menu for proper positioning
-    } else {
-      startGame(); // Restart game for proper positioning
-    }
-  }
-}
-
-function showMainMenu() {
-  if (currentScreen) {
-    currentScreen.destroy();
-  }
-
-  currentScreen = new MainMenu({
-    app,
-    onPlayClick: startGame,
-  });
-
-  app.stage.addChild(currentScreen.container);
+  // Start the game
+  startGame();
 }
 
 async function startGame() {
-  if (currentScreen) {
-    currentScreen.destroy();
+  // Cleanup previous game if exists
+  if (currentGame) {
+    currentGame.destroy();
   }
 
-  currentScreen = await initGame(app);
+  // Initialize new game
+  currentGame = await initGame(app);
 }
 
 // Start the application
