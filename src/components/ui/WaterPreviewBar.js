@@ -61,49 +61,44 @@ export default class WaterPreviewBar {
     this.waterPreview.clear();
 
     // Draw background
-    this.backgroundPreview.beginFill(0x333333);
-    this.backgroundPreview.drawRoundedRect(0, 0, this.waterWidth, this.totalHeight, this.cornerRadius);
-    this.backgroundPreview.endFill();
+    this.backgroundPreview.roundRect(0, 0, this.waterWidth, this.totalHeight, this.cornerRadius);
+    this.backgroundPreview.fill({ color: 0x333333 });
 
     // Draw inner background (metallic effect)
-    this.backgroundPreview.beginFill(0x666666);
-    this.backgroundPreview.drawRoundedRect(
+    this.backgroundPreview.roundRect(
       this.borderWidth,
       this.borderWidth,
       this.waterWidth - this.borderWidth * 2,
       this.totalHeight - this.borderWidth * 2,
       this.cornerRadius / 2
     );
-    this.backgroundPreview.endFill();
+    this.backgroundPreview.fill({ color: 0x666666 });
 
     // Metallic shine lines
     for (let i = 0; i < 3; i++) {
-      this.backgroundPreview.beginFill(0x999999, 0.3);
-      this.backgroundPreview.drawRoundedRect(this.borderWidth + i * 2, 0, 2, this.totalHeight, 1);
-      this.backgroundPreview.endFill();
+      this.backgroundPreview.roundRect(this.borderWidth + i * 2, 0, 2, this.totalHeight, 1);
+      this.backgroundPreview.fill({ color: 0x999999, alpha: 0.3 });
     }
 
     // Draw water (blue)
-    this.waterPreview.beginFill(0x0099ff, 0.9);
-    this.waterPreview.drawRoundedRect(
+    this.waterPreview.roundRect(
       this.borderWidth,
       this.totalHeight - this.waterHeight + this.borderWidth,
       this.waterWidth - this.borderWidth * 2,
       this.waterHeight - this.borderWidth * 2,
       this.cornerRadius / 2
     );
-    this.waterPreview.endFill();
+    this.waterPreview.fill({ color: 0x0099ff, alpha: 0.9 });
 
     // Add shine effect on water
-    this.waterPreview.beginFill(0xffffff, 0.2);
-    this.waterPreview.drawRoundedRect(
+    this.waterPreview.roundRect(
       this.borderWidth + 2,
       this.totalHeight - this.waterHeight + this.borderWidth,
       4,
       this.waterHeight - this.borderWidth * 2,
       1
     );
-    this.waterPreview.endFill();
+    this.waterPreview.fill({ color: 0xffffff, alpha: 0.2 });
   }
 
   fadeOut() {
