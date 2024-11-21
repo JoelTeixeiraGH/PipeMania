@@ -1,5 +1,9 @@
-import { Container, Graphics, Ticker, Text, TextStyle } from 'pixi.js';
+import { Container, Ticker } from 'pixi.js';
 import Pipe from './pipes/Pipe';
+import WaterPreviewBar from './ui/WaterPreviewBar';
+import GameOverScreen from './ui/GameOverScreen';
+import WinScreen from './ui/WinScreen';
+import DistanceDisplay from './ui/DistanceDisplay';
 
 export default class WaterFlow {
   constructor({ grid }) {
@@ -9,149 +13,38 @@ export default class WaterFlow {
     this.currentTile = null;
     this.fillProgress = 0;
 
-    // Create preview
-    this.setupPreview();
-
-    // Add distance goal properties
+    // Initialize game properties
     this.targetDistance = this.generateTargetDistance();
     this.currentDistance = 0;
-
-    // Add status
     this.hasWon = false;
 
-    // Create UI container
+    // Initialize UI
+    this.initializeUI();
+  }
+
+  initializeUI() {
     this.uiContainer = new Container();
-    this.setupDistanceDisplay();
     this.grid.app.stage.addChild(this.uiContainer);
+
+    // Create water preview bar
+    this.waterPreviewBar = new WaterPreviewBar({
+      grid: this.grid,
+      getFlowState: () => this.isFlowing,
+    });
+    this.waterPreviewBar.onTimeUp = () => this.startFlow();
+    this.grid.app.stage.addChild(this.waterPreviewBar.container);
+
+    // Create distance display
+    this.distanceDisplay = new DistanceDisplay({ grid: this.grid });
+    this.distanceDisplay.update(this.currentDistance, this.targetDistance);
+    this.uiContainer.addChild(this.distanceDisplay.container);
   }
 
-  setupPreview() {
-    this.previewContainer = new Container();
-    this.waterPreview = new Graphics();
-    this.backgroundPreview = new Graphics();
-    this.previewContainer.addChild(this.backgroundPreview);
-    this.previewContainer.addChild(this.waterPreview);
-
-    // Position settings
-    const gridRightX = this.grid.gridContainer.x + this.grid.gridCols * this.grid.spriteWidth * this.grid.spriteScale;
-    this.previewContainer.x = gridRightX + 20;
-    this.previewContainer.y = this.grid.gridContainer.y;
-
-    // Timer and animation properties
-    this.waterWidth = 30;
-    this.cornerRadius = 4;
-    this.borderWidth = 3;
-    this.totalTime = 15000;
-    this.remainingTime = this.totalTime;
-    this.startTime = Date.now();
-    this.totalHeight = this.grid.gridRows * this.grid.spriteHeight * this.grid.spriteScale;
-    this.waterHeight = this.totalHeight;
-    this.waveOffset = 0;
-    this.waveAmplitude = 1.5;
-
-    this.grid.app.stage.addChild(this.previewContainer);
-
-    // Start preview animation
-    this.previewTicker = Ticker.shared.add(this.updatePreview, this);
-  }
-
-  updatePreview = (deltaMS) => {
-    if (this.isFlowing) return;
-
-    const currentTime = Date.now();
-    this.remainingTime = Math.max(0, this.totalTime - (currentTime - this.startTime));
-    this.waterHeight = (this.remainingTime / this.totalTime) * this.totalHeight;
-
-    if (this.remainingTime <= 0) {
-      this.startFlow();
-      return;
-    }
-
-    this.backgroundPreview.clear();
-    this.waterPreview.clear();
-
-    // Draw metallic background with multiple layers
-    // Outer border (darker)
-    this.backgroundPreview
-      .fill({ color: 0x333333 })
-      .roundRect(0, 0, this.waterWidth, this.totalHeight, this.cornerRadius);
-
-    // Inner border (metallic)
-    this.backgroundPreview
-      .fill({ color: 0x666666 })
-      .roundRect(
-        this.borderWidth,
-        this.borderWidth,
-        this.waterWidth - this.borderWidth * 2,
-        this.totalHeight - this.borderWidth * 2,
-        this.cornerRadius / 2
-      );
-
-    // Metallic shine lines
-    for (let i = 0; i < 3; i++) {
-      this.backgroundPreview
-        .fill({ color: 0x999999, alpha: 0.3 })
-        .roundRect(this.borderWidth + i * 2, 0, 2, this.totalHeight, 1);
-    }
-
-    // Wave effect
-    this.waveOffset += 0.1;
-    const waveX = Math.sin(this.waveOffset) * this.waveAmplitude;
-
-    // Water colors
-    const progress = this.remainingTime / this.totalTime;
-    const waterColors = [
-      { pos: 0, color: this.interpolateColor(progress, 0xcccccc, 0x666666) },
-      { pos: 0.3, color: this.interpolateColor(progress, 0x99ccff, 0x3399cc) },
-      { pos: 0.7, color: this.interpolateColor(progress, 0x6699cc, 0x336699) },
-      { pos: 1, color: this.interpolateColor(progress, 0x336699, 0x333366) },
-    ];
-
-    // Draw water
-    this.waterPreview
-      .fill({
-        color: waterColors[1].color,
-        alpha: 0.9,
-        gradient: waterColors,
-      })
-      .roundRect(
-        this.borderWidth + waveX,
-        this.totalHeight - this.waterHeight + this.borderWidth,
-        this.waterWidth - this.borderWidth * 2,
-        this.waterHeight - this.borderWidth * 2,
-        this.cornerRadius / 2
-      );
-
-    // Metallic shine on water
-    this.waterPreview
-      .fill({ color: 0xffffff, alpha: 0.2 })
-      .roundRect(
-        this.borderWidth + waveX + 2,
-        this.totalHeight - this.waterHeight + this.borderWidth,
-        4,
-        this.waterHeight - this.borderWidth * 2,
-        1
-      );
-  };
-
-  startFlow() {
+  async startFlow() {
     this.isFlowing = true;
-
-    // Clean up preview
-    const fadeOut = () => {
-      this.previewContainer.alpha -= 0.05;
-      if (this.previewContainer.alpha <= 0) {
-        Ticker.shared.remove(this.previewTicker);
-        this.grid.app.stage.removeChild(this.previewContainer);
-        this.previewContainer.destroy();
-        // Start water flow after preview is completely gone
-        setTimeout(() => this.startWaterFlow(), 100);
-      } else {
-        requestAnimationFrame(fadeOut);
-      }
-    };
-
-    fadeOut();
+    await this.waterPreviewBar.fadeOut();
+    this.waterPreviewBar.destroy();
+    setTimeout(() => this.startWaterFlow(), 100);
   }
 
   startWaterFlow() {
@@ -186,8 +79,8 @@ export default class WaterFlow {
     // When current pipe is full
     if (this.fillProgress >= 1) {
       this.currentTile.setFilled();
-      this.currentDistance++; // Increment distance counter
-      this.updateDistanceText(); // Update the distance display
+      this.currentDistance++;
+      this.distanceDisplay.update(this.currentDistance, this.targetDistance);
 
       this.fillProgress = 0;
       this.lastTime = Date.now();
@@ -201,7 +94,7 @@ export default class WaterFlow {
       const nextTile = this.findNextPipe();
 
       if (!nextTile) {
-        this.handleGameOver(false); // Lost due to no valid path
+        this.handleGameOver(false);
         return;
       }
 
@@ -273,22 +166,18 @@ export default class WaterFlow {
   }
 
   canConnect(fromPipe, toPipe, direction) {
-    const canConnect = (() => {
-      switch (direction) {
-        case 'right':
-          return fromPipe.canFlowRight && toPipe.canFlowLeft;
-        case 'left':
-          return fromPipe.canFlowLeft && toPipe.canFlowRight;
-        case 'up':
-          return fromPipe.canFlowUp && toPipe.canFlowDown;
-        case 'down':
-          return fromPipe.canFlowDown && toPipe.canFlowUp;
-        default:
-          return false;
-      }
-    })();
-
-    return canConnect;
+    switch (direction) {
+      case 'right':
+        return fromPipe.canFlowRight && toPipe.canFlowLeft;
+      case 'left':
+        return fromPipe.canFlowLeft && toPipe.canFlowRight;
+      case 'up':
+        return fromPipe.canFlowUp && toPipe.canFlowDown;
+      case 'down':
+        return fromPipe.canFlowDown && toPipe.canFlowUp;
+      default:
+        return false;
+    }
   }
 
   interpolateColor(progress, startColor, endColor) {
@@ -311,123 +200,16 @@ export default class WaterFlow {
     this.gameOver = true;
     this.hasWon = wonGame;
     Ticker.shared.remove(this.updateWaterFlow);
-
-    // Set grid's gameOver flag
     this.grid.gameOver = true;
 
-    // Create and show game over animation
-    this.showGameOverAnimation(wonGame);
-  }
-
-  showGameOverAnimation(wonGame) {
-    const animContainer = new Container();
-    this.grid.app.stage.addChild(animContainer);
-
-    // Dark industrial overlay
-    const overlay = new Graphics()
-      .fill({ color: 0x111111, alpha: 0.85 })
-      .rect(0, 0, this.grid.app.screen.width, this.grid.app.screen.height);
-    animContainer.addChild(overlay);
-
-    // Industrial message style
-    const messageStyle = {
-      fontFamily: 'Impact',
-      fontSize: 64,
-      fontWeight: 'bold',
-      fill: wonGame ? '#FFD700' : '#FF3333',
-      stroke: {
-        color: '#2A2A2A',
-        width: 6,
-      },
-      dropShadow: true,
-      dropShadowColor: '#000000',
-      dropShadowBlur: 4,
-      dropShadowAngle: Math.PI / 3,
-      dropShadowDistance: 6,
-      letterSpacing: 4,
-      lineJoin: 'bevel',
-    };
-
-    const message = new Text({
-      text: wonGame ? 'MISSION COMPLETE' : 'SYSTEM FAILURE',
-      style: messageStyle,
+    const ScreenComponent = wonGame ? WinScreen : GameOverScreen;
+    const screen = new ScreenComponent({
+      app: this.grid.app,
+      currentDistance: this.currentDistance,
+      targetDistance: this.targetDistance,
     });
 
-    message.anchor.set(0.5);
-    message.position.set(this.grid.app.screen.width / 2, this.grid.app.screen.height / 2 - 20);
-
-    message.scale.set(0);
-    animContainer.addChild(message);
-
-    // Animate message
-    let scale = 0;
-    const animate = () => {
-      if (scale < 1) {
-        scale += 0.05;
-        message.scale.set(scale);
-        requestAnimationFrame(animate);
-      }
-    };
-    animate();
-
-    // Industrial stats style
-    const statsStyle = {
-      fontFamily: 'Impact',
-      fontSize: 28,
-      fill: '#A4A4A4',
-      stroke: {
-        color: '#2A2A2A',
-        width: 2,
-      },
-      dropShadow: true,
-      dropShadowColor: '#000000',
-      dropShadowBlur: 2,
-      dropShadowAngle: Math.PI / 3,
-      dropShadowDistance: 3,
-      letterSpacing: 2,
-    };
-
-    const statsText = new Text({
-      text: wonGame
-        ? `PIPES CONNECTED: ${this.currentDistance}`
-        : `SYSTEM HALT AT: ${this.currentDistance}/${this.targetDistance}`,
-      style: statsStyle,
-    });
-
-    statsText.anchor.set(0.5);
-    statsText.position.set(this.grid.app.screen.width / 2, message.y + message.height + 40);
-    statsText.alpha = 0;
-    animContainer.addChild(statsText);
-
-    // Fade in stats text
-    const fadeInStats = () => {
-      if (statsText.alpha < 1) {
-        statsText.alpha += 0.05;
-        requestAnimationFrame(fadeInStats);
-      }
-    };
-    setTimeout(fadeInStats, 500);
-
-    // Add metallic shine effect for win
-    if (wonGame) {
-      const shine = new Graphics().fill({ color: 0xffffff, alpha: 0.3 }).circle(0, 0, 120);
-
-      shine.position.set(message.x, message.y);
-      shine.scale.set(0);
-      animContainer.addChildAt(shine, 0);
-
-      // Animate shine with metallic effect
-      let shineScale = 0;
-      const animateShine = () => {
-        if (shineScale < 2) {
-          shineScale += 0.04;
-          shine.scale.set(shineScale);
-          shine.alpha = Math.max(0, 0.3 - shineScale / 4);
-          requestAnimationFrame(animateShine);
-        }
-      };
-      setTimeout(animateShine, 200);
-    }
+    this.grid.app.stage.addChild(screen.container);
   }
 
   handleWin() {
@@ -448,41 +230,10 @@ export default class WaterFlow {
     return Math.floor(Math.random() * (20 - 15 + 1)) + 15;
   }
 
-  setupDistanceDisplay() {
-    const textStyle = {
-      fontFamily: 'Impact',
-      fontSize: 32,
-      fill: '#FFD700',
-      stroke: {
-        color: '#2A2A2A',
-        width: 4,
-      },
-      dropShadow: true,
-      dropShadowColor: '#000000',
-      dropShadowBlur: 2,
-      dropShadowAngle: Math.PI / 3,
-      dropShadowDistance: 3,
-      letterSpacing: 2,
-      lineJoin: 'bevel',
-    };
-
-    this.distanceText = new Text({
-      text: '',
-      style: textStyle,
-    });
-
-    // Center based on grid position
-    this.distanceText.anchor.set(0.5, 0);
-    this.distanceText.position.set(
-      this.grid.gridContainer.x + (this.grid.gridCols * this.grid.spriteWidth * this.grid.spriteScale) / 2,
-      20
-    );
-
-    this.updateDistanceText();
-    this.uiContainer.addChild(this.distanceText);
-  }
-
-  updateDistanceText() {
-    this.distanceText.text = `DISTANCE: ${this.currentDistance}/${this.targetDistance}`;
+  destroy() {
+    Ticker.shared.remove(this.updateWaterFlow);
+    this.waterPreviewBar?.destroy();
+    this.distanceDisplay?.destroy();
+    this.uiContainer.destroy({ children: true });
   }
 }
