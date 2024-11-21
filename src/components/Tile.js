@@ -1,4 +1,5 @@
-import { Sprite, Assets } from 'pixi.js';
+import { Sprite, Assets, Graphics } from 'pixi.js';
+
 export default class Tile extends Sprite {
   constructor({ row, col, label }) {
     super();
@@ -6,6 +7,11 @@ export default class Tile extends Sprite {
     this.col = col;
     this.label = label;
     this.isShaking = false;
+
+    // Hover tint values
+    this.normalTint = 0xffffff;
+    this.hoverTint = 0xaaaaaa;
+    this.tint = this.normalTint;
   }
 
   async loadTexture(texturePath) {
@@ -17,10 +23,26 @@ export default class Tile extends Sprite {
   makeInteractive() {
     this.eventMode = 'static';
     this.cursor = 'pointer';
+
+    // Add hover effects
+    this.on('mouseover', this.onMouseOver);
+    this.on('mouseout', this.onMouseOut);
+
+    // Existing click handler
     this.on('pointerdown', () => {
       this.emit('tile:clicked', this);
     });
   }
+
+  onMouseOver = () => {
+    if (!this.isShaking) {
+      this.tint = this.hoverTint;
+    }
+  };
+
+  onMouseOut = () => {
+    this.tint = this.normalTint;
+  };
 
   showLockedFeedback() {
     if (this.isShaking) return;
@@ -29,6 +51,9 @@ export default class Tile extends Sprite {
     const originalX = this.x;
     const shake = 3;
     const duration = 100;
+
+    // Reset tint during shake
+    this.tint = this.normalTint;
 
     const shakeSequence = () => {
       this.x = originalX + shake;
