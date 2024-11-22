@@ -1,4 +1,4 @@
-import chain from '../../assets/chain_sprite.png';
+import chain from '../../assets/sprites/tiles/chain.png';
 import Tile from './Tile';
 
 export default class Chain extends Tile {

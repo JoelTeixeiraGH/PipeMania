@@ -1,4 +1,4 @@
-import pipeVertical from '../../assets/pipe_vertical.png';
+import pipeVertical from '../../assets/sprites/pipes/pipe_vertical.png';
 import Pipe from './Pipe';
 
 export default class PipeVertical extends Pipe {

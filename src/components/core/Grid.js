@@ -6,12 +6,17 @@ import Tile from '../tiles/Tile';
 import Chain from '../tiles/Chain';
 import PathBlocker from '../tiles/PathBlocker';
 
-// Pipes
-import PipeVertical from '../pipes/PipeVertical';
+// Starting points
 import StartingPointRight from '../pipes/StartingPointRight';
+import StartingPointLeft from '../pipes/StartingPointLeft';
+import StartingPointUp from '../pipes/StartingPointUp';
+import StartingPointDown from '../pipes/StartingPointDown';
 
 // NewBlocksRow
 import NewBlocksRow from './NewBlocksRow';
+
+// Starting points
+import { STARTING_POINTS } from '../../config/startingPoints';
 
 export default class Grid {
   constructor({ app }) {
@@ -128,17 +133,22 @@ export default class Grid {
 
   placeStartingPoint() {
     let validStartPosition = false;
-    let startRow, startCol;
+    let startRow, startCol, selectedStartingPoint;
 
     while (!validStartPosition) {
-      startRow = Math.floor(Math.random() * (this.gridRows - 1)); // Exclude the last row
-      startCol = Math.floor(Math.random() * (this.gridCols - 1)); // Exclude the last column
+      // Random position
+      startRow = Math.floor(Math.random() * this.gridRows);
+      startCol = Math.floor(Math.random() * this.gridCols);
 
-      // Check if the below and right cells are blocked
-      const isBlockedBelow = this.blockedCells.some((cell) => cell.row === startRow + 1 && cell.col === startCol);
-      const isBlockedRight = this.blockedCells.some((cell) => cell.row === startRow && cell.col === startCol + 1);
+      // Get random starting point type
+      const availableStartingPoints = STARTING_POINTS.filter(
+        (sp) =>
+          sp.validPosition(startRow, startCol, this.gridRows, this.gridCols) &&
+          !sp.checkBlocked(startRow, startCol, this.blockedCells)
+      );
 
-      if (!isBlockedBelow && !isBlockedRight) {
+      if (availableStartingPoints.length > 0) {
+        selectedStartingPoint = availableStartingPoints[Math.floor(Math.random() * availableStartingPoints.length)];
         validStartPosition = true;
       }
     }
@@ -149,8 +159,8 @@ export default class Grid {
       this.gridContainer.removeChild(existingTile);
     }
 
-    // Create an instance of StartingPoint
-    const startingPoint = new StartingPointRight(startRow, startCol);
+    // Create the selected starting point
+    const startingPoint = new selectedStartingPoint.type(startRow, startCol);
 
     // Scale and position the starting point
     startingPoint.scale.set(this.spriteScale);

@@ -1,4 +1,4 @@
-import pipeTJunctionTexture from '../../assets/pipe_tjunction.png';
+import pipeTJunctionTexture from '../../assets/sprites/pipes/pipe_tjunction.png';
 import Pipe from './Pipe';
 
 export default class PipeTJunction extends Pipe {

@@ -1,4 +1,4 @@
-import pipeCircleTopRightTexture from '../../assets/pipe_circle_topright.png';
+import pipeCircleTopRightTexture from '../../assets/sprites/pipes/pipe_circle_topright.png';
 import Pipe from './Pipe';
 
 export default class PipeCircleTopRight extends Pipe {

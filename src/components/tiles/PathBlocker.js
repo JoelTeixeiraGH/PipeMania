@@ -1,4 +1,4 @@
-import pathBlockerTexture from '../../assets/blocked_sprite.png';
+import pathBlockerTexture from '../../assets/sprites/tiles/path_blocker.png';
 import Tile from './Tile';
 
 export default class PathBlocker extends Tile {

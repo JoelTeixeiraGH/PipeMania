@@ -1,18 +1,18 @@
 import { Texture } from 'pixi.js';
 import Pipe from './Pipe';
-import startingPointRight from '../../assets/sprites/starting_points/starting_point_right.png';
+import startingPointLeft from '../../assets/sprites/starting_points/starting_point_left.png';
 
-export default class StartingPointRight extends Pipe {
+export default class StartingPointLeft extends Pipe {
   constructor(row, col) {
     super({
       row: row,
       col: col,
-      label: 'startingPointRight',
+      label: 'startingPointLeft',
     });
 
-    this.canFlowRight = true;
+    this.canFlowLeft = true;
 
-    this.loadTexture(startingPointRight);
+    this.loadTexture(startingPointLeft);
 
     this.makeInteractive();
   }
