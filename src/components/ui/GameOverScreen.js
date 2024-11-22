@@ -111,7 +111,6 @@ export default class GameOverScreen {
 
   createReplayButton() {
     const button = new Button('TRY AGAIN', {
-      backgroundColor: 0xff3333,
       textColor: 0xffffff,
     });
 

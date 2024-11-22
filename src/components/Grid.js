@@ -1,4 +1,4 @@
-import { Container } from 'pixi.js';
+import { Container, Assets } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
 import Tile from './Tile';
 import Chain from './Chain';
@@ -51,12 +51,28 @@ export default class Grid {
       }
     }
 
-    // Clear all tiles array
+    // Unload textures properly
+    const textureKeys = [
+      'straight',
+      'corner',
+      'cross',
+      'start',
+      // Add any other texture keys you're using
+    ];
+
+    // Unload all textures
+    textureKeys.forEach((key) => {
+      if (Assets.cache.has(key)) {
+        Assets.unload(key);
+      }
+    });
+
+    // Clear tiles array
     this.tiles = [];
 
-    // Remove and destroy the grid container and all its children
+    // Remove and destroy the grid container
     if (this.gridContainer) {
-      this.gridContainer.destroy({ children: true, texture: true, baseTexture: true });
+      this.gridContainer.destroy({ children: true });
     }
 
     // Clear references
