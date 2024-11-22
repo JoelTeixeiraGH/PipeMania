@@ -17,11 +17,9 @@ export default class Pipe extends Tile {
     this.cursor = 'pointer';
 
     this.on('pointerdown', () => {
-      if (this.isFilled || this.isFlowing) {
-        this.showLockedFeedback();
-        return;
+      if (!this.isLocked()) {
+        this.emit('tile:clicked', this);
       }
-      this.emit('tile:clicked', this);
     });
   }
 

@@ -44,7 +44,7 @@ export default class Tile extends Sprite {
     this.tint = this.normalTint;
   };
 
-  showLockedFeedback() {
+  /* showLockedFeedback() {
     if (this.isShaking) return;
 
     this.isShaking = true;
@@ -69,5 +69,5 @@ export default class Tile extends Sprite {
     };
 
     shakeSequence();
-  }
+  } */
 }

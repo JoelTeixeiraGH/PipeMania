@@ -20,10 +20,6 @@ export default class StartingPointRight extends Pipe {
   makeInteractive() {
     this.eventMode = 'static';
     this.cursor = 'not-allowed';
-
-    this.on('pointerdown', () => {
-      this.showLockedFeedback();
-    });
   }
 
   isLocked() {
