@@ -1,5 +1,5 @@
 import { Container, Graphics, Text } from 'pixi.js';
-import Button from './Button';
+import ReplayButton from './ReplayButton';
 
 export default class WinScreen {
   constructor({ app, currentDistance, onRestart }) {
@@ -98,31 +98,18 @@ export default class WinScreen {
   }
 
   createReplayButton() {
-    const button = new Button('PLAY AGAIN', {
-      backgroundColor: 0xffd700,
-      textColor: 0x000000,
+    const button = new ReplayButton({
+      app: this.app,
+      onRestart: () => {
+        this.onRestart();
+        this.destroy();
+      },
+      text: 'PLAY AGAIN',
     });
 
     button.position.set(this.app.screen.width / 2 - button.width / 2, this.statsText.y + this.statsText.height + 40);
 
-    button.alpha = 0;
-    button.on('pointerdown', () => {
-      this.onRestart();
-      this.destroy();
-    });
-
     this.container.addChild(button);
-
-    // Fade in button after stats
-    setTimeout(() => {
-      const fadeIn = () => {
-        if (button.alpha < 1) {
-          button.alpha += 0.05;
-          requestAnimationFrame(fadeIn);
-        }
-      };
-      fadeIn();
-    }, 1000);
   }
 
   animateMessage() {
