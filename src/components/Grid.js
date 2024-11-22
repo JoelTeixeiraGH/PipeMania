@@ -40,6 +40,32 @@ export default class Grid {
     this.blockTileChance = 0.05;
   }
 
+  destroy() {
+    // Remove all event listeners from tiles
+    for (let row = 0; row < this.gridRows; row++) {
+      for (let col = 0; col < this.gridCols; col++) {
+        const tile = this.tiles[row][col];
+        if (tile) {
+          tile.removeAllListeners(); // Remove all event listeners
+        }
+      }
+    }
+
+    // Clear all tiles array
+    this.tiles = [];
+
+    // Remove and destroy the grid container and all its children
+    if (this.gridContainer) {
+      this.gridContainer.destroy({ children: true, texture: true, baseTexture: true });
+    }
+
+    // Clear references
+    this.startingPoint = null;
+    this.gameOver = false;
+    this.tiles = null;
+    this.gridContainer = null;
+  }
+
   async init() {
     // Initialize grid first
     for (let row = 0; row < this.gridRows; row++) {

@@ -1,10 +1,12 @@
 import { Container, Graphics, Text } from 'pixi.js';
+import Button from './Button';
 
 export default class GameOverScreen {
-  constructor({ app, currentDistance, targetDistance }) {
+  constructor({ app, currentDistance, targetDistance, onRestart }) {
     this.app = app;
     this.currentDistance = currentDistance;
     this.targetDistance = targetDistance;
+    this.onRestart = onRestart;
     this.container = new Container();
     this.createScreen();
   }
@@ -13,6 +15,7 @@ export default class GameOverScreen {
     this.createOverlay();
     this.createMessage();
     this.createStats();
+    this.createReplayButton();
   }
 
   createOverlay() {
@@ -104,6 +107,33 @@ export default class GameOverScreen {
       }
     };
     fadeIn();
+  }
+
+  createReplayButton() {
+    const button = new Button('TRY AGAIN', {
+      backgroundColor: 0xff3333,
+    });
+
+    button.position.set(this.app.screen.width / 2 - button.width / 2, this.statsText.y + this.statsText.height + 40);
+
+    button.alpha = 0;
+    button.on('pointerdown', () => {
+      this.onRestart();
+      this.destroy();
+    });
+
+    this.container.addChild(button);
+
+    // Fade in button after stats
+    setTimeout(() => {
+      const fadeIn = () => {
+        if (button.alpha < 1) {
+          button.alpha += 0.05;
+          requestAnimationFrame(fadeIn);
+        }
+      };
+      fadeIn();
+    }, 1000);
   }
 
   destroy() {

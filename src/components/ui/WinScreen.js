@@ -1,9 +1,11 @@
 import { Container, Graphics, Text } from 'pixi.js';
+import Button from './Button';
 
 export default class WinScreen {
-  constructor({ app, currentDistance }) {
+  constructor({ app, currentDistance, onRestart }) {
     this.app = app;
     this.currentDistance = currentDistance;
+    this.onRestart = onRestart;
     this.container = new Container();
     this.createScreen();
   }
@@ -13,6 +15,7 @@ export default class WinScreen {
     this.createMessage();
     this.createStats();
     this.createShineEffect();
+    this.createReplayButton();
   }
 
   createOverlay() {
@@ -92,6 +95,33 @@ export default class WinScreen {
     this.container.addChildAt(this.shine, 0);
 
     setTimeout(() => this.animateShine(), 200);
+  }
+
+  createReplayButton() {
+    const button = new Button('PLAY AGAIN', {
+      backgroundColor: 0xffd700,
+    });
+
+    button.position.set(this.app.screen.width / 2 - button.width / 2, this.statsText.y + this.statsText.height + 40);
+
+    button.alpha = 0;
+    button.on('pointerdown', () => {
+      this.onRestart();
+      this.destroy();
+    });
+
+    this.container.addChild(button);
+
+    // Fade in button after stats
+    setTimeout(() => {
+      const fadeIn = () => {
+        if (button.alpha < 1) {
+          button.alpha += 0.05;
+          requestAnimationFrame(fadeIn);
+        }
+      };
+      fadeIn();
+    }, 1000);
   }
 
   animateMessage() {

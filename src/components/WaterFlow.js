@@ -207,6 +207,13 @@ export default class WaterFlow {
       app: this.grid.app,
       currentDistance: this.currentDistance,
       targetDistance: this.targetDistance,
+      onRestart: () => {
+        // Get reference to the game instance
+        const game = this.grid.app.game;
+        if (game) {
+          game.restart();
+        }
+      },
     });
 
     this.grid.app.stage.addChild(screen.container);

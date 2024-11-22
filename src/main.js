@@ -1,8 +1,7 @@
 import { Application } from 'pixi.js';
-import { initGame } from './components/Game';
+import { Game } from './components/Game';
 
 let app;
-let currentGame;
 
 async function init() {
   // Create PixiJS application
@@ -12,18 +11,9 @@ async function init() {
   await app.init();
   document.body.appendChild(app.canvas);
 
-  // Start the game
-  startGame();
-}
-
-async function startGame() {
-  // Cleanup previous game if exists
-  if (currentGame) {
-    currentGame.destroy();
-  }
-
-  // Initialize new game
-  currentGame = await initGame(app);
+  // Create and store game instance
+  app.game = new Game(app);
+  await app.game.init();
 }
 
 // Start the application
