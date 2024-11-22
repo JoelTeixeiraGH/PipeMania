@@ -1,5 +1,5 @@
-import Grid from './Grid';
-import WaterFlow from './WaterFlow';
+import Grid from './core/Grid';
+import WaterFlow from './core/WaterFlow';
 
 export class Game {
   constructor(app) {

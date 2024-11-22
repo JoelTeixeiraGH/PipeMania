@@ -1,4 +1,4 @@
-import Tile from '../Tile';
+import Tile from '../tiles/Tile';
 
 export default class Pipe extends Tile {
   constructor({ row, col, label }) {

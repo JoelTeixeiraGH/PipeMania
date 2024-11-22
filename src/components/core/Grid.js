@@ -1,12 +1,17 @@
 import { Container, Assets } from 'pixi.js';
 import { GlowFilter } from '@pixi/filter-glow';
-import Tile from './Tile';
-import Chain from './Chain';
-import PathBlocker from './PathBlocker';
 
+// Tiles
+import Tile from '../tiles/Tile';
+import Chain from '../tiles/Chain';
+import PathBlocker from '../tiles/PathBlocker';
+
+// Pipes
+import PipeVertical from '../pipes/PipeVertical';
+import StartingPointRight from '../pipes/StartingPointRight';
+
+// NewBlocksRow
 import NewBlocksRow from './NewBlocksRow';
-import PipeVertical from './pipes/PipeVertical';
-import StartingPointRight from './pipes/StartingPointRight';
 
 export default class Grid {
   constructor({ app }) {

@@ -1,9 +1,9 @@
 import { Container, Ticker } from 'pixi.js';
-import Pipe from './pipes/Pipe';
-import WaterPreviewBar from './ui/WaterPreviewBar';
-import GameOverScreen from './ui/GameOverScreen';
-import WinScreen from './ui/WinScreen';
-import DistanceDisplay from './ui/DistanceDisplay';
+import Pipe from '../pipes/Pipe';
+import WaterPreviewBar from '../ui/hud/WaterPreviewBar';
+import GameOverScreen from '../ui/screens/GameOverScreen';
+import WinScreen from '../ui/screens/WinScreen';
+import DistanceDisplay from '../ui/hud/DistanceDisplay';
 
 export default class WaterFlow {
   constructor({ grid }) {

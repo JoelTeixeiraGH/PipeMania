@@ -1,5 +1,5 @@
 import { Container, Graphics, Text } from 'pixi.js';
-import ReplayButton from './ReplayButton';
+import ReplayButton from '../buttons/ReplayButton';
 
 export default class GameOverScreen {
   constructor({ app, currentDistance, targetDistance, onRestart }) {

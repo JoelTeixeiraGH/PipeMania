@@ -4,7 +4,7 @@ export default class ReplayButton extends Button {
   constructor({ app, onRestart, text = 'TRY AGAIN' }) {
     super(text, {
       backgroundColor: 0x2a2a2a,
-      textColor: 0xa4a4a4,
+      textColor: 'white',
       textStyle: {
         fontFamily: 'Impact',
         fontSize: 28,

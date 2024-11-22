@@ -1,12 +1,12 @@
 import { Container, Assets } from 'pixi.js';
-import Tile from './Tile';
-import pipeCircleDownLeft from '../components/pipes/PipeCircleDownLeft';
-import pipeCircleDownRight from '../components/pipes/PipeCircleDownRight';
-import pipeCircleUpLeft from '../components/pipes/PipeCircleTopLeft';
-import pipeCircleUpRight from '../components/pipes/PipeCircleTopRight';
-import pipeHorizontal from '../components/pipes/PipeHorizontal';
-import pipeVertical from '../components/pipes/PipeVertical';
-import pipeTJunction from '../components/pipes/PipeTJunction';
+import Tile from '../tiles/Tile';
+import pipeCircleDownLeft from '../pipes/PipeCircleDownLeft';
+import pipeCircleDownRight from '../pipes/PipeCircleDownRight';
+import pipeCircleUpLeft from '../pipes/PipeCircleTopLeft';
+import pipeCircleUpRight from '../pipes/PipeCircleTopRight';
+import pipeHorizontal from '../pipes/PipeHorizontal';
+import pipeVertical from '../pipes/PipeVertical';
+import pipeTJunction from '../pipes/PipeTJunction';
 
 export default class NewBlocksRow {
   constructor({ app, grid }) {
