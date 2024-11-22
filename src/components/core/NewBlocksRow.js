@@ -8,7 +8,16 @@ import pipeHorizontal from '../pipes/PipeHorizontal';
 import pipeVertical from '../pipes/PipeVertical';
 import pipeTJunction from '../pipes/PipeTJunction';
 
+/**
+ * Class representing a row of new blocks that can be used to replace tiles in the grid
+ */
 export default class NewBlocksRow {
+  /**
+   * Creates a new NewBlocksRow instance
+   * @param {Object} params - The initialization parameters
+   * @param {PIXI.Application} params.app - The PIXI application instance
+   * @param {Grid} params.grid - The grid instance this row belongs to
+   */
   constructor({ app, grid }) {
     this.app = app;
     this.grid = grid;
@@ -20,6 +29,7 @@ export default class NewBlocksRow {
     const padding = 20;
     const newBlocksWidth = this.grid.spriteWidth * this.grid.spriteScale;
 
+    // Position the container
     this.container.x = gridLeftEdge - newBlocksWidth - padding;
     this.container.y = gridTopEdge + 2 * this.grid.spriteHeight * this.grid.spriteScale;
 
@@ -27,7 +37,7 @@ export default class NewBlocksRow {
 
     this.tiles = [];
 
-    // Cache pipe types
+    // Available pipe types for new blocks
     this.pipeTypes = [
       pipeCircleDownLeft,
       pipeCircleDownRight,
@@ -38,17 +48,19 @@ export default class NewBlocksRow {
       pipeTJunction,
     ];
 
-    // Pre-create a pool of tiles
+    // Initialize tile pool and tiles
     this.tilePool = this.createTilePool();
-
     this.initializeTiles();
     this.highlightFirstTile();
   }
 
-  // Create a pool of pre-instantiated tiles
+  /**
+   * Creates a pool of pre-instantiated tiles for better performance
+   * @returns {Array<Array<Tile>>} Pool of tiles organized by pipe type
+   */
   createTilePool() {
     const pool = [];
-    const poolSize = 10; // More than we need for buffer
+    const poolSize = 10; // Buffer size for each pipe type
 
     this.pipeTypes.forEach((PipeClass) => {
       const tiles = [];
@@ -66,7 +78,10 @@ export default class NewBlocksRow {
     return pool;
   }
 
-  // Get a tile from the pool
+  /**
+   * Gets an available tile from the pool or creates a new one if needed
+   * @returns {Tile} A tile instance ready for use
+   */
   getTileFromPool() {
     const typeIndex = Math.floor(Math.random() * this.pipeTypes.length);
     const tiles = this.tilePool[typeIndex];
@@ -78,11 +93,14 @@ export default class NewBlocksRow {
       return tile;
     }
 
-    // If no tile available, create a new one
+    // Create new tile if pool is exhausted
     const PipeClass = this.pipeTypes[typeIndex];
     return new PipeClass({ row: 0, col: 0 });
   }
 
+  /**
+   * Initializes the initial set of tiles in the row
+   */
   initializeTiles() {
     for (let i = 0; i < 5; i++) {
       const tile = this.getTileFromPool();
@@ -95,6 +113,9 @@ export default class NewBlocksRow {
     }
   }
 
+  /**
+   * Highlights the first tile in the row and dims others
+   */
   highlightFirstTile() {
     this.tiles.forEach((tile) => {
       tile.alpha = 0.7;
@@ -107,15 +128,21 @@ export default class NewBlocksRow {
     }
   }
 
+  /**
+   * Shifts all tiles up and adds a new one at the bottom
+   */
   shiftTilesUp() {
+    // Remove top tile and return it to pool
     const removedTile = this.tiles.shift();
     this.container.removeChild(removedTile);
-    removedTile.visible = false; // Return to pool instead of destroying
+    removedTile.visible = false;
 
+    // Shift remaining tiles up
     this.tiles.forEach((tile, index) => {
       tile.y = (4 - index) * this.grid.spriteHeight * this.grid.spriteScale;
     });
 
+    // Add new tile at bottom
     const newTile = this.getTileFromPool();
     newTile.scale.set(this.grid.spriteScale);
     newTile.x = 0;
@@ -127,8 +154,11 @@ export default class NewBlocksRow {
     this.highlightFirstTile();
   }
 
+  /**
+   * Cleans up resources and returns tiles to pool
+   */
   destroy() {
-    // Hide all tiles instead of destroying them
+    // Return all tiles to pool
     this.tilePool.flat().forEach((tile) => {
       tile.visible = false;
       tile.removeAllListeners();

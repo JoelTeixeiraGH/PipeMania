@@ -9,9 +9,6 @@ export default class PathBlocker extends Tile {
       label: 'pathBlocker',
     });
 
-    this.interactive = true;
-    this.cursor = 'not-allowed';
-
     this.loadTexture(pathBlockerTexture);
   }
 }

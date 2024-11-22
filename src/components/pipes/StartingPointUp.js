@@ -17,11 +17,6 @@ export default class StartingPointUp extends Pipe {
     this.makeInteractive();
   }
 
-  makeInteractive() {
-    this.eventMode = 'static';
-    this.cursor = 'not-allowed';
-  }
-
   isLocked() {
     return true;
   }

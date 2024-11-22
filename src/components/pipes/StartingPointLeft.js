@@ -13,13 +13,6 @@ export default class StartingPointLeft extends Pipe {
     this.canFlowLeft = true;
 
     this.loadTexture(startingPointLeft);
-
-    this.makeInteractive();
-  }
-
-  makeInteractive() {
-    this.eventMode = 'static';
-    this.cursor = 'not-allowed';
   }
 
   isLocked() {

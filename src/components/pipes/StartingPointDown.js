@@ -13,13 +13,6 @@ export default class StartingPointDown extends Pipe {
     this.canFlowDown = true;
 
     this.loadTexture(startingPointDown);
-
-    this.makeInteractive();
-  }
-
-  makeInteractive() {
-    this.eventMode = 'static';
-    this.cursor = 'not-allowed';
   }
 
   isLocked() {

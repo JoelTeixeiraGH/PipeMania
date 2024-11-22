@@ -43,31 +43,4 @@ export default class Tile extends Sprite {
   onMouseOut = () => {
     this.tint = this.normalTint;
   };
-
-  /* showLockedFeedback() {
-    if (this.isShaking) return;
-
-    this.isShaking = true;
-    const originalX = this.x;
-    const shake = 3;
-    const duration = 100;
-
-    // Reset tint during shake
-    this.tint = this.normalTint;
-
-    const shakeSequence = () => {
-      this.x = originalX + shake;
-
-      setTimeout(() => {
-        this.x = originalX - shake;
-
-        setTimeout(() => {
-          this.x = originalX;
-          this.isShaking = false;
-        }, duration / 2);
-      }, duration / 2);
-    };
-
-    shakeSequence();
-  } */
 }

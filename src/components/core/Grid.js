@@ -16,121 +16,143 @@ import StartingPointDown from '../pipes/StartingPointDown';
 import NewBlocksRow from './NewBlocksRow';
 
 // Starting points
-import { STARTING_POINTS } from '../../config/startingPoints';
+import { STARTING_POINTS } from './StartingPoints';
 
 export default class Grid {
+  /**
+   * Creates a new Grid instance
+   * @param {Object} params - The initialization parameters
+   * @param {PIXI.Application} params.app - The PIXI application instance
+   */
   constructor({ app }) {
+    this.initializeProperties(app);
+    this.setupGridContainer(app);
+  }
+
+  /**
+   * Initializes all grid properties with default values
+   * @param {PIXI.Application} app - The PIXI application instance
+   */
+  initializeProperties(app) {
     this.app = app;
-    // Grid size
     this.gridRows = 9;
     this.gridCols = 7;
-    // Tile size
     this.spriteWidth = 26;
     this.spriteHeight = 26;
     this.spriteScale = 2;
-
-    // Calculate scale for responsive grid
-    const scaleX = window.innerWidth / (this.gridCols * this.spriteWidth);
-    const scaleY = window.innerHeight / (this.gridRows * this.spriteHeight);
-    this.scaleFactor = Math.min(scaleX, scaleY);
-
-    // Grid container
-    this.gridContainer = new Container();
-    app.stage.addChild(this.gridContainer);
-
-    // Other properties
     this.blockedCells = [];
     this.startingPoint = null;
     this.newBlocksRow = null;
-    this.tiles = Array(this.gridRows)
-      .fill()
-      .map(() => Array(this.gridCols).fill(null));
+    this.tiles = this.createEmptyTilesArray();
     this.gameOver = false;
-
     this.blockTileChance = 0.05;
   }
 
-  destroy() {
-    // Remove all event listeners from tiles
-    for (let row = 0; row < this.gridRows; row++) {
-      for (let col = 0; col < this.gridCols; col++) {
-        const tile = this.tiles[row][col];
-        if (tile) {
-          tile.removeAllListeners(); // Remove all event listeners
-        }
-      }
-    }
-
-    // Unload textures properly
-    const textureKeys = [
-      'straight',
-      'corner',
-      'cross',
-      'start',
-      // Add any other texture keys you're using
-    ];
-
-    // Unload all textures
-    textureKeys.forEach((key) => {
-      if (Assets.cache.has(key)) {
-        Assets.unload(key);
-      }
-    });
-
-    // Clear tiles array
-    this.tiles = [];
-
-    // Remove and destroy the grid container
-    if (this.gridContainer) {
-      this.gridContainer.destroy({ children: true });
-    }
-
-    // Clear references
-    this.startingPoint = null;
-    this.gameOver = false;
-    this.tiles = null;
-    this.gridContainer = null;
+  /**
+   * Creates a 2D array filled with null values for the grid
+   * @returns {Array<Array<null>>} Empty 2D array representing the grid
+   */
+  createEmptyTilesArray() {
+    return Array(this.gridRows)
+      .fill()
+      .map(() => Array(this.gridCols).fill(null));
   }
 
+  /**
+   * Sets up the main container for the grid
+   * @param {PIXI.Application} app - The PIXI application instance
+   */
+  setupGridContainer(app) {
+    this.gridContainer = new Container();
+    app.stage.addChild(this.gridContainer);
+  }
+
+  /**
+   * Initializes the grid by placing tiles, starting point, and creating the new blocks row
+   */
   async init() {
-    // Initialize grid first
-    for (let row = 0; row < this.gridRows; row++) {
-      for (let col = 0; col < this.gridCols; col++) {
-        let tile;
-        // Randomly decide if the tile should be a PathBlocker
-        if (Math.random() < this.blockTileChance) {
-          tile = new PathBlocker(row, col); // Create a PathBlocker object
-          this.blockedCells.push({ row, col }); // Track blocked cells
-        } else {
-          tile = new Chain(row, col);
-          // Add click listener for replaceable tiles
-          tile.on('tile:clicked', (clickedTile) => this.handleTileReplacement(clickedTile));
-        }
-
-        // Scale and position the tile
-        tile.scale.set(this.spriteScale);
-        tile.x = col * this.spriteWidth * this.spriteScale;
-        tile.y = row * this.spriteHeight * this.spriteScale;
-
-        this.gridContainer.addChild(tile);
-        this.tiles[row][col] = tile;
-      }
-    }
-
+    this.initializeGridTiles();
     this.startingPoint = this.placeStartingPoint();
     this.gridContainer.addChild(this.startingPoint);
+    this.centerGrid();
+    this.createNewBlocksRow();
+  }
 
-    // Center the grid
+  /**
+   * Creates and places initial tiles for the entire grid
+   */
+  initializeGridTiles() {
+    for (let row = 0; row < this.gridRows; row++) {
+      for (let col = 0; col < this.gridCols; col++) {
+        this.createAndPlaceTile(row, col);
+      }
+    }
+  }
+
+  /**
+   * Creates and places a single tile at the specified position
+   * @param {number} row - The row index
+   * @param {number} col - The column index
+   */
+  createAndPlaceTile(row, col) {
+    const tile = this.createTile(row, col);
+    this.positionTile(tile, row, col);
+    this.gridContainer.addChild(tile);
+    this.tiles[row][col] = tile;
+  }
+
+  /**
+   * Creates either a PathBlocker or Chain tile based on random chance
+   * @param {number} row - The row index
+   * @param {number} col - The column index
+   * @returns {PathBlocker|Chain} The created tile
+   */
+  createTile(row, col) {
+    let tile;
+    if (Math.random() < this.blockTileChance) {
+      tile = new PathBlocker(row, col);
+      this.blockedCells.push({ row, col });
+    } else {
+      tile = new Chain(row, col);
+      tile.on('tile:clicked', (clickedTile) => this.handleTileReplacement(clickedTile));
+    }
+    return tile;
+  }
+
+  /**
+   * Positions a tile at the specified grid coordinates
+   * @param {Tile} tile - The tile to position
+   * @param {number} row - The row index
+   * @param {number} col - The column index
+   */
+  positionTile(tile, row, col) {
+    tile.scale.set(this.spriteScale);
+    tile.x = col * this.spriteWidth * this.spriteScale;
+    tile.y = row * this.spriteHeight * this.spriteScale;
+  }
+
+  /**
+   * Centers the grid container in the application window
+   */
+  centerGrid() {
     this.gridContainer.x = (this.app.renderer.width - this.gridContainer.width) / 2;
     this.gridContainer.y = (this.app.renderer.height - this.gridContainer.height) / 2;
+  }
 
-    // Create NewBlocksRow after grid is positioned
+  /**
+   * Creates the row of new blocks at the bottom of the grid
+   */
+  createNewBlocksRow() {
     this.newBlocksRow = new NewBlocksRow({
       app: this.app,
       grid: this,
     });
   }
 
+  /**
+   * Places a starting point at a random valid position on the grid
+   * @returns {StartingPoint} The created starting point
+   */
   placeStartingPoint() {
     let validStartPosition = false;
     let startRow, startCol, selectedStartingPoint;
@@ -140,7 +162,7 @@ export default class Grid {
       startRow = Math.floor(Math.random() * this.gridRows);
       startCol = Math.floor(Math.random() * this.gridCols);
 
-      // Get random starting point type
+      // Get random starting points
       const availableStartingPoints = STARTING_POINTS.filter(
         (sp) =>
           sp.validPosition(startRow, startCol, this.gridRows, this.gridCols) &&
@@ -170,6 +192,12 @@ export default class Grid {
     return startingPoint;
   }
 
+  /**
+   * Gets the tile at the specified position
+   * @param {number} row - The row index
+   * @param {number} col - The column index
+   * @returns {Tile|null} The tile at the position or null if out of bounds
+   */
   getTileAt(row, col) {
     if (row < 0 || row >= this.gridRows || col < 0 || col >= this.gridCols) {
       return null; // Return null if out of bounds
@@ -177,115 +205,189 @@ export default class Grid {
     return this.tiles[row][col];
   }
 
+  /**
+   * Handles the replacement of a clicked tile
+   * @param {Tile} clickedTile - The tile that was clicked
+   */
   handleTileReplacement(clickedTile) {
-    // Check if game is over first
-    if (this.gameOver) {
-      return;
-    }
-
-    if (clickedTile instanceof PathBlocker || clickedTile instanceof StartingPointRight) {
-      return;
-    }
+    if (this.isReplacementInvalid(clickedTile)) return;
 
     const replacementTile = this.newBlocksRow.tiles[0];
     if (!replacementTile) return;
 
-    const row = clickedTile.row;
-    const col = clickedTile.col;
+    this.performTileReplacement(clickedTile, replacementTile);
+  }
 
-    // Remove old tile with fade out
-    const fadeOutOldTile = () => {
-      const speed = 0.08;
-      clickedTile.alpha -= speed;
+  /**
+   * Checks if a tile replacement is invalid
+   * @param {Tile} clickedTile - The tile to check
+   * @returns {boolean} True if replacement is invalid
+   */
+  isReplacementInvalid(clickedTile) {
+    return this.gameOver || clickedTile instanceof PathBlocker || clickedTile instanceof StartingPointRight;
+  }
 
-      // First grow quickly, then shrink
-      if (clickedTile.alpha > 0.5) {
-        clickedTile.scale.x += speed;
-        clickedTile.scale.y += speed;
-      } else {
-        clickedTile.scale.x -= speed * 1.5;
-        clickedTile.scale.y -= speed * 1.5;
-      }
+  /**
+   * Performs the tile replacement animation sequence
+   * @param {Tile} oldTile - The tile being replaced
+   * @param {Tile} replacementTile - The new tile
+   */
+  performTileReplacement(oldTile, replacementTile) {
+    const row = oldTile.row;
+    const col = oldTile.col;
 
-      if (clickedTile.alpha <= 0) {
-        this.gridContainer.removeChild(clickedTile);
-        this.tiles[row][col] = null;
-        placeNewTile();
-      } else {
-        requestAnimationFrame(fadeOutOldTile);
-      }
-    };
+    this.animateOldTileRemoval(oldTile, row, col, () => {
+      this.placeNewTileWithAnimation(replacementTile, row, col);
+    });
 
-    // Place new tile with animation
-    const placeNewTile = () => {
-      const NewPipeClass = replacementTile.constructor;
-      const newTile = new NewPipeClass({
-        row: row,
-        col: col,
-        label: replacementTile.label,
-      });
-
-      // Setup new tile
-      newTile.row = row;
-      newTile.col = col;
-      newTile.scale.set(0); // Start with scale 0 for pop effect
-      newTile.x = col * this.spriteWidth * this.spriteScale + (this.spriteWidth * this.spriteScale) / 2;
-      newTile.y = row * this.spriteHeight * this.spriteScale + (this.spriteHeight * this.spriteScale) / 2;
-      newTile.anchor.set(0.5); // Set anchor to center for better scaling
-      newTile.alpha = 0.8; // Start slightly transparent
-
-      // Add glow filter
-      const glowFilter = new GlowFilter({
-        distance: 15,
-        outerStrength: 2,
-        innerStrength: 1,
-        color: 0x00ffff,
-        quality: 0.5,
-      });
-      newTile.filters = [glowFilter];
-
-      newTile.on('tile:clicked', (tile) => this.handleTileReplacement(tile));
-
-      this.gridContainer.addChild(newTile);
-      this.tiles[row][col] = newTile;
-
-      // Pop in animation
-      let scale = 0;
-      const animatePlace = () => {
-        scale += 0.15;
-        const currentScale = Math.min(this.spriteScale, this.spriteScale * (1 + Math.sin(scale) * 0.3));
-        newTile.scale.set(currentScale);
-        newTile.alpha = Math.min(1, newTile.alpha + 0.1);
-
-        if (scale <= Math.PI) {
-          requestAnimationFrame(animatePlace);
-        } else {
-          // Reset scale and position
-          newTile.scale.set(this.spriteScale);
-          newTile.x = col * this.spriteWidth * this.spriteScale;
-          newTile.y = row * this.spriteHeight * this.spriteScale;
-          newTile.anchor.set(0);
-
-          // Fade out glow
-          const fadeOutGlow = () => {
-            glowFilter.outerStrength -= 0.1;
-            if (glowFilter.outerStrength <= 0) {
-              newTile.filters = null;
-            } else {
-              requestAnimationFrame(fadeOutGlow);
-            }
-          };
-          setTimeout(fadeOutGlow, 200);
-        }
-      };
-
-      animatePlace();
-    };
-
-    // Start the animation sequence
-    fadeOutOldTile();
-
-    // Update NewBlocksRow
     this.newBlocksRow.shiftTilesUp();
+  }
+
+  /**
+   * Animates the removal of an old tile
+   * @param {Tile} tile - The tile to remove
+   * @param {number} row - The row index
+   * @param {number} col - The column index
+   * @param {Function} onComplete - Callback function after animation
+   */
+  animateOldTileRemoval(tile, row, col, onComplete) {
+    const animate = () => {
+      const speed = 0.08;
+      tile.alpha -= speed;
+
+      if (tile.alpha > 0.5) {
+        tile.scale.x += speed;
+        tile.scale.y += speed;
+      } else {
+        tile.scale.x -= speed * 1.5;
+        tile.scale.y -= speed * 1.5;
+      }
+
+      if (tile.alpha <= 0) {
+        this.gridContainer.removeChild(tile);
+        this.tiles[row][col] = null;
+        onComplete();
+      } else {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+  }
+
+  /**
+   * Places a new tile with animation
+   * @param {Tile} replacementTile - The tile to place
+   * @param {number} row - The row index
+   * @param {number} col - The column index
+   */
+  placeNewTileWithAnimation(replacementTile, row, col) {
+    const newTile = this.createNewTile(replacementTile, row, col);
+    this.setupNewTile(newTile, row, col);
+    this.animateNewTilePlacement(newTile);
+  }
+
+  /**
+   * Creates a new tile instance based on a source tile
+   * @param {Tile} sourceTile - The tile to copy from
+   * @param {number} row - The row index
+   * @param {number} col - The column index
+   * @returns {Tile} The new tile instance
+   */
+  createNewTile(sourceTile, row, col) {
+    // Create a new instance of the same type as the source tile
+    const NewTileClass = sourceTile.constructor;
+    const newTile = new NewTileClass(row, col);
+
+    // Copy relevant properties
+    newTile.rotation = sourceTile.rotation;
+    newTile.texture = sourceTile.texture;
+
+    return newTile;
+  }
+
+  /**
+   * Sets up a new tile with proper position and event listeners
+   * @param {Tile} newTile - The tile to setup
+   * @param {number} row - The row index
+   * @param {number} col - The column index
+   */
+  setupNewTile(newTile, row, col) {
+    newTile.scale.set(this.spriteScale);
+    newTile.x = col * this.spriteWidth * this.spriteScale;
+    newTile.y = row * this.spriteHeight * this.spriteScale;
+    newTile.alpha = 1;
+
+    // Add click handler
+    newTile.on('tile:clicked', (clickedTile) => this.handleTileReplacement(clickedTile));
+
+    // Add to grid container and update tiles array
+    this.gridContainer.addChild(newTile);
+    this.tiles[row][col] = newTile;
+  }
+
+  /**
+   * Animates the placement of a new tile
+   * @param {Tile} newTile - The tile to animate
+   */
+  animateNewTilePlacement(newTile) {
+    // Optional: Add placement animation
+    newTile.alpha = 0;
+
+    const animate = () => {
+      const speed = 0.1;
+      newTile.alpha += speed;
+
+      if (newTile.alpha < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    animate();
+  }
+
+  /**
+   * Cleans up the grid and releases resources
+   */
+  destroy() {
+    this.removeEventListeners();
+    this.cleanupGridContainer();
+    this.clearReferences();
+  }
+
+  /**
+   * Removes all event listeners from tiles
+   */
+  removeEventListeners() {
+    // Remove all event listeners from tiles
+    for (let row = 0; row < this.gridRows; row++) {
+      for (let col = 0; col < this.gridCols; col++) {
+        const tile = this.tiles[row][col];
+        if (tile) {
+          tile.removeAllListeners(); // Remove all event listeners
+        }
+      }
+    }
+  }
+
+  /**
+   * Cleans up the grid container and its children
+   */
+  cleanupGridContainer() {
+    // Remove and destroy the grid container
+    if (this.gridContainer) {
+      this.gridContainer.destroy({ children: true });
+    }
+  }
+
+  /**
+   * Clears all references to prevent memory leaks
+   */
+  clearReferences() {
+    // Clear references
+    this.startingPoint = null;
+    this.gameOver = false;
+    this.tiles = null;
+    this.gridContainer = null;
   }
 }
