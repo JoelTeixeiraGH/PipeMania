@@ -6,12 +6,15 @@ export default class Button extends Container {
 
     const { width = 200, height = 60, backgroundColor = 0x0099ff, textColor = 0x000000 } = options;
 
-    // Create text
-    this.label = new Text(text, {
-      fontFamily: 'Impact',
-      fontSize: 28,
-      fill: textColor,
-      letterSpacing: 2,
+    // Create text using new constructor syntax
+    this.label = new Text({
+      text: text,
+      style: {
+        fontFamily: 'Impact',
+        fontSize: 28,
+        fill: textColor,
+        letterSpacing: 2,
+      },
     });
 
     // Center text
