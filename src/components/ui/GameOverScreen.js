@@ -112,6 +112,7 @@ export default class GameOverScreen {
   createReplayButton() {
     const button = new Button('TRY AGAIN', {
       backgroundColor: 0xff3333,
+      textColor: 0xffffff,
     });
 
     button.position.set(this.app.screen.width / 2 - button.width / 2, this.statsText.y + this.statsText.height + 40);

@@ -4,25 +4,18 @@ export default class Button extends Container {
   constructor(text, options = {}) {
     super();
 
-    const {
-      width = 200,
-      height = 60,
-      backgroundColor = 0x0099ff,
-      textStyle = {
-        fontFamily: 'Impact',
-        fontSize: 28,
-        fill: '#FFFFFF',
-        letterSpacing: 2,
-      },
-    } = options;
+    const { width = 200, height = 60, backgroundColor = 0x0099ff, textColor = 0x000000 } = options;
 
     // Create button background
-    this.background = new Graphics().fill({ color: backgroundColor }).roundRect(0, 0, width, height, 10);
+    this.background = new Graphics();
+    this.background.roundRect(0, 0, width, height, 10).fill(backgroundColor);
 
     // Create text
-    this.label = new Text({
-      text,
-      style: textStyle,
+    this.label = new Text(text, {
+      fontFamily: 'Impact',
+      fontSize: 28,
+      fill: textColor,
+      letterSpacing: 2,
     });
 
     // Center text

@@ -100,6 +100,7 @@ export default class WinScreen {
   createReplayButton() {
     const button = new Button('PLAY AGAIN', {
       backgroundColor: 0xffd700,
+      textColor: 0x000000,
     });
 
     button.position.set(this.app.screen.width / 2 - button.width / 2, this.statsText.y + this.statsText.height + 40);
