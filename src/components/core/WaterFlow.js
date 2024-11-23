@@ -22,6 +22,17 @@ export default class WaterFlow {
   static MAX_TARGET_DISTANCE = 20;
 
   /**
+   * Direction constants for pipe flow
+   * @enum {string}
+   */
+  static DIRECTION = {
+    RIGHT: 'right',
+    LEFT: 'left',
+    UP: 'up',
+    DOWN: 'down',
+  };
+
+  /**
    * Creates a new WaterFlow instance
    * @param {Object} params - Initialization parameters
    * @param {Grid} params.grid - Reference to the game grid
@@ -207,19 +218,92 @@ export default class WaterFlow {
   }
 
   /**
-   * Finds the next valid pipe in the sequence
+   * Finds the next valid pipe in the sequence, prioritizing paths with more connections
    * @returns {Pipe|null} Next pipe or null if none found
    */
   findNextPipe() {
     if (!this.currentTile) return null;
 
-    const directions = this.getValidDirections();
-    for (const { tile, direction } of directions) {
-      if (this.canConnect(this.currentTile, tile, direction)) {
-        return tile;
+    const validPaths = this.getValidDirections()
+      .filter(({ tile, direction }) => this.canConnect(this.currentTile, tile, direction))
+      .map((path) => ({
+        ...path,
+        connectionScore: this.calculatePathScore(path.tile),
+      }))
+      .sort((a, b) => b.connectionScore - a.connectionScore); // Sort by highest score first
+
+    return validPaths.length > 0 ? validPaths[0].tile : null;
+  }
+
+  /**
+   * Calculates a score for a path based on number of connected pipes
+   * @param {Pipe} startPipe - The pipe to start checking from
+   * @param {Set<string>} visited - Set of visited positions (for recursion)
+   * @param {number} depth - Current recursion depth
+   * @returns {number} Score for the path
+   */
+  calculatePathScore(startPipe, visited = new Set(), depth = 0) {
+    // Limit recursion depth to prevent infinite loops
+    const MAX_DEPTH = 5;
+    if (depth >= MAX_DEPTH) return 0;
+
+    // Create position key for visited set
+    const posKey = `${startPipe.row},${startPipe.col}`;
+    if (visited.has(posKey)) return 0;
+    visited.add(posKey);
+
+    // Get all possible connections from this pipe
+    const connections = this.getPossibleConnections(startPipe);
+    if (connections.length === 0) return 1;
+
+    // Recursively calculate scores for each connection
+    const connectionScores = connections.map((nextPipe) =>
+      this.calculatePathScore(nextPipe, new Set(visited), depth + 1)
+    );
+
+    // Return sum of all connection scores plus this pipe
+    return 1 + connectionScores.reduce((sum, score) => sum + score, 0);
+  }
+
+  /**
+   * Gets all possible pipe connections from a given pipe
+   * @param {Pipe} pipe - The pipe to check connections from
+   * @returns {Array<Pipe>} Array of connected pipes
+   */
+  getPossibleConnections(pipe) {
+    const connections = [];
+    const { row, col } = pipe;
+
+    // Check each direction (keeping original approach)
+    if (pipe.canFlowRight) {
+      const rightPipe = this.grid.getTileAt(row, col + 1);
+      if (rightPipe instanceof Pipe && !rightPipe.isFilled && rightPipe.canFlowLeft) {
+        connections.push(rightPipe);
       }
     }
-    return null;
+
+    if (pipe.canFlowLeft) {
+      const leftPipe = this.grid.getTileAt(row, col - 1);
+      if (leftPipe instanceof Pipe && !leftPipe.isFilled && leftPipe.canFlowRight) {
+        connections.push(leftPipe);
+      }
+    }
+
+    if (pipe.canFlowUp) {
+      const upPipe = this.grid.getTileAt(row - 1, col);
+      if (upPipe instanceof Pipe && !upPipe.isFilled && upPipe.canFlowDown) {
+        connections.push(upPipe);
+      }
+    }
+
+    if (pipe.canFlowDown) {
+      const downPipe = this.grid.getTileAt(row + 1, col);
+      if (downPipe instanceof Pipe && !downPipe.isFilled && downPipe.canFlowUp) {
+        connections.push(downPipe);
+      }
+    }
+
+    return connections;
   }
 
   /**
@@ -230,10 +314,10 @@ export default class WaterFlow {
     const { row, col } = this.currentTile;
     const directions = [];
 
-    this.checkDirection(row, col + 1, 'right', directions);
-    this.checkDirection(row, col - 1, 'left', directions);
-    this.checkDirection(row - 1, col, 'up', directions);
-    this.checkDirection(row + 1, col, 'down', directions);
+    this.checkDirection(row, col + 1, WaterFlow.DIRECTION.RIGHT, directions);
+    this.checkDirection(row, col - 1, WaterFlow.DIRECTION.LEFT, directions);
+    this.checkDirection(row - 1, col, WaterFlow.DIRECTION.UP, directions);
+    this.checkDirection(row + 1, col, WaterFlow.DIRECTION.DOWN, directions);
 
     return directions;
   }
@@ -261,13 +345,13 @@ export default class WaterFlow {
    */
   canConnect(fromPipe, toPipe, direction) {
     switch (direction) {
-      case 'right':
+      case WaterFlow.DIRECTION.RIGHT:
         return fromPipe.canFlowRight && toPipe.canFlowLeft;
-      case 'left':
+      case WaterFlow.DIRECTION.LEFT:
         return fromPipe.canFlowLeft && toPipe.canFlowRight;
-      case 'up':
+      case WaterFlow.DIRECTION.UP:
         return fromPipe.canFlowUp && toPipe.canFlowDown;
-      case 'down':
+      case WaterFlow.DIRECTION.DOWN:
         return fromPipe.canFlowDown && toPipe.canFlowUp;
       default:
         return false;
