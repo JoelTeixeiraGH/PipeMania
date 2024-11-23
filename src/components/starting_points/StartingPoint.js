@@ -15,6 +15,8 @@ export default class StartingPoint extends Pipe {
    */
   constructor({ row, col, label }) {
     super({ row, col, label });
+
+    this.makeNonAllowedInteraction();
   }
 
   /**

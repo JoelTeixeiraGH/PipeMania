@@ -18,6 +18,8 @@ export default class PathBlocker extends Tile {
       label: 'pathBlocker',
     });
 
+    this.makeNonAllowedInteraction();
+
     // Load the blocker texture
     this.loadTexture(pathBlockerTexture);
   }

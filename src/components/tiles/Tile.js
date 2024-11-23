@@ -52,6 +52,11 @@ export default class Tile extends Sprite {
     });
   }
 
+  makeNonAllowedInteraction() {
+    this.eventMode = 'static';
+    this.cursor = 'not-allowed';
+  }
+
   /**
    * Handler for mouse over event
    * Changes tile tint to hover color

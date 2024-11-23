@@ -25,7 +25,7 @@ export default class DistanceDisplay {
     const textStyle = {
       fontFamily: 'Impact',
       fontSize: 32,
-      fill: '#FFD700', // Gold color
+      fill: 'white',
       stroke: {
         color: '#2A2A2A',
         width: 4,

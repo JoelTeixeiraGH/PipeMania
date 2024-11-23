@@ -8,6 +8,7 @@ const REPLAY_CONFIG = {
   style: {
     background: 0x2a2a2a,
     text: 'white',
+    textHover: '#FFD700',
     font: {
       family: 'Impact',
       size: 28,
@@ -80,6 +81,14 @@ export default class ReplayButton extends Button {
    */
   setupEventListeners(onRestart) {
     this.on('pointerdown', onRestart);
+
+    this.on('pointerover', () => {
+      this.label.style.fill = REPLAY_CONFIG.style.textHover;
+    });
+
+    this.on('pointerout', (event) => {
+      this.label.style.fill = REPLAY_CONFIG.style.text;
+    });
   }
 
   /**

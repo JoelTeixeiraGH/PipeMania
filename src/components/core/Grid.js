@@ -224,7 +224,7 @@ export default class Grid {
    * @returns {boolean} True if replacement is invalid
    */
   isReplacementInvalid(clickedTile) {
-    return this.gameOver || clickedTile instanceof PathBlocker || clickedTile instanceof StartingPointRight;
+    return this.gameOver;
   }
 
   /**
@@ -253,14 +253,15 @@ export default class Grid {
   animateOldTileRemoval(tile, row, col, onComplete) {
     const animate = () => {
       const speed = 0.08;
+      const scale_animation_multiplier = 1.5;
       tile.alpha -= speed;
 
       if (tile.alpha > 0.5) {
         tile.scale.x += speed;
         tile.scale.y += speed;
       } else {
-        tile.scale.x -= speed * 1.5;
-        tile.scale.y -= speed * 1.5;
+        tile.scale.x -= speed * scale_animation_multiplier;
+        tile.scale.y -= speed * scale_animation_multiplier;
       }
 
       if (tile.alpha <= 0) {
