@@ -16,7 +16,7 @@ import StartingPointDown from '../starting_points/StartingPointDown';
 import NewBlocksRow from './NewBlocksRow';
 
 // Starting points
-import { STARTING_POINTS } from './StartingPoints';
+import { STARTING_POINTS } from './StartingPointValidations';
 
 export default class Grid {
   /**
