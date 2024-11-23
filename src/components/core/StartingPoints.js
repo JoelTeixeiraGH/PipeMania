@@ -45,14 +45,17 @@ const directionValidations = {
     isValidPosition: (col, gridCols) => col < gridCols - 1,
 
     /**
-     * Checks if there's a blocked cell to the right
-     * @param {number} row - The current row position
-     * @param {number} col - The current column position
-     * @param {Array<{row: number, col: number}>} blockedCells - Array of blocked cell positions
-     * @returns {boolean} True if there's a blocked cell to the right
+     * For right-facing starting point:
+     * Can't have blocker to the right
+     * Can't have both blockers in front-up and front-down diagonals
      */
-    hasBlockedInDirection: (row, col, blockedCells) =>
-      blockedCells.some((cell) => cell.row === row && cell.col === col + 1),
+    hasBlockedInDirection: (row, col, blockedCells) => {
+      const hasBlockedRight = blockedCells.some((cell) => cell.row === row && cell.col === col + 1);
+      const hasBlockedFrontUp = blockedCells.some((cell) => cell.row === row - 1 && cell.col === col + 1);
+      const hasBlockedFrontDown = blockedCells.some((cell) => cell.row === row + 1 && cell.col === col + 1);
+
+      return hasBlockedRight || (hasBlockedFrontUp && hasBlockedFrontDown);
+    },
   },
 
   /**
@@ -68,14 +71,17 @@ const directionValidations = {
     isValidPosition: (col) => col > 0,
 
     /**
-     * Checks if there's a blocked cell to the left
-     * @param {number} row - The current row position
-     * @param {number} col - The current column position
-     * @param {Array<{row: number, col: number}>} blockedCells - Array of blocked cell positions
-     * @returns {boolean} True if there's a blocked cell to the left
+     * For left-facing starting point:
+     * Can't have blocker to the left
+     * Can't have both blockers in front-up and front-down diagonals
      */
-    hasBlockedInDirection: (row, col, blockedCells) =>
-      blockedCells.some((cell) => cell.row === row && cell.col === col - 1),
+    hasBlockedInDirection: (row, col, blockedCells) => {
+      const hasBlockedLeft = blockedCells.some((cell) => cell.row === row && cell.col === col - 1);
+      const hasBlockedFrontUp = blockedCells.some((cell) => cell.row === row - 1 && cell.col === col - 1);
+      const hasBlockedFrontDown = blockedCells.some((cell) => cell.row === row + 1 && cell.col === col - 1);
+
+      return hasBlockedLeft || (hasBlockedFrontUp && hasBlockedFrontDown);
+    },
   },
 
   /**
@@ -91,14 +97,17 @@ const directionValidations = {
     isValidPosition: (row) => row > 0,
 
     /**
-     * Checks if there's a blocked cell above
-     * @param {number} row - The current row position
-     * @param {number} col - The current column position
-     * @param {Array<{row: number, col: number}>} blockedCells - Array of blocked cell positions
-     * @returns {boolean} True if there's a blocked cell above
+     * For upward-facing starting point:
+     * Can't have blocker above
+     * Can't have both blockers in front-left and front-right diagonals
      */
-    hasBlockedInDirection: (row, col, blockedCells) =>
-      blockedCells.some((cell) => cell.row === row - 1 && cell.col === col),
+    hasBlockedInDirection: (row, col, blockedCells) => {
+      const hasBlockedUp = blockedCells.some((cell) => cell.row === row - 1 && cell.col === col);
+      const hasBlockedFrontLeft = blockedCells.some((cell) => cell.row === row - 1 && cell.col === col - 1);
+      const hasBlockedFrontRight = blockedCells.some((cell) => cell.row === row - 1 && cell.col === col + 1);
+
+      return hasBlockedUp || (hasBlockedFrontLeft && hasBlockedFrontRight);
+    },
   },
 
   /**
@@ -112,13 +121,17 @@ const directionValidations = {
     isValidPosition: () => true,
 
     /**
-     * Uses common validation for checking blocked cell below
-     * @param {number} row - The current row position
-     * @param {number} col - The current column position
-     * @param {Array<{row: number, col: number}>} blockedCells - Array of blocked cell positions
-     * @returns {boolean} True if there's a blocked cell below
+     * For downward-facing starting point:
+     * Can't have blocker below
+     * Can't have both blockers in front-left and front-right diagonals
      */
-    hasBlockedInDirection: (row, col, blockedCells) => commonValidations.hasBlockedBelow(row, col, blockedCells),
+    hasBlockedInDirection: (row, col, blockedCells) => {
+      const hasBlockedDown = blockedCells.some((cell) => cell.row === row + 1 && cell.col === col);
+      const hasBlockedFrontLeft = blockedCells.some((cell) => cell.row === row + 1 && cell.col === col - 1);
+      const hasBlockedFrontRight = blockedCells.some((cell) => cell.row === row + 1 && cell.col === col + 1);
+
+      return hasBlockedDown || (hasBlockedFrontLeft && hasBlockedFrontRight);
+    },
   },
 };
 
