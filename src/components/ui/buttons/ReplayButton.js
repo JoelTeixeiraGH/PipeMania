@@ -76,7 +76,6 @@ export default class ReplayButton extends Button {
 
   /**
    * Sets up button event listeners
-   * @private
    * @param {Function} onRestart - Restart callback
    */
   setupEventListeners(onRestart) {
@@ -85,7 +84,6 @@ export default class ReplayButton extends Button {
 
   /**
    * Starts the fade-in animation
-   * @private
    */
   fadeIn() {
     setTimeout(() => this.startFadeAnimation(), REPLAY_CONFIG.animation.delay);
@@ -93,7 +91,6 @@ export default class ReplayButton extends Button {
 
   /**
    * Handles the fade animation logic
-   * @private
    */
   startFadeAnimation() {
     const animate = () => {

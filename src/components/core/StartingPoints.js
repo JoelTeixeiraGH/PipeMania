@@ -1,7 +1,7 @@
-import StartingPointRight from '../pipes/StartingPointRight';
-import StartingPointLeft from '../pipes/StartingPointLeft';
-import StartingPointUp from '../pipes/StartingPointUp';
-import StartingPointDown from '../pipes/StartingPointDown';
+import StartingPointRight from '../starting_points/StartingPointRight';
+import StartingPointLeft from '../starting_points/StartingPointLeft';
+import StartingPointUp from '../starting_points/StartingPointUp';
+import StartingPointDown from '../starting_points/StartingPointDown';
 
 /**
  * Common validation functions used across all starting points
