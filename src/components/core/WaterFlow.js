@@ -310,8 +310,6 @@ export default class WaterFlow {
     const ScreenComponent = wonGame ? WinScreen : GameOverScreen;
     const screen = new ScreenComponent({
       app: this.grid.app,
-      currentDistance: this.currentDistance,
-      targetDistance: this.targetDistance,
       onRestart: () => {
         // Get reference to the game instance
         const game = this.grid.app.game;

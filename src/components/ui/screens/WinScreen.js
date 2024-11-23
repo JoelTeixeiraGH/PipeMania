@@ -1,23 +1,38 @@
 import { Container, Graphics, Text } from 'pixi.js';
 import ReplayButton from '../buttons/ReplayButton';
 
+/**
+ * Screen displayed when the player wins the game
+ */
 export default class WinScreen {
-  constructor({ app, currentDistance, onRestart }) {
+  /**
+   * Creates a new win screen
+   * @param {Object} params - Screen parameters
+   * @param {PIXI.Application} params.app - PIXI application instance
+   * @param {Function} params.onRestart - Callback function for restart
+   */
+  constructor({ app, onRestart }) {
     this.app = app;
-    this.currentDistance = currentDistance;
     this.onRestart = onRestart;
     this.container = new Container();
     this.createScreen();
   }
 
+  /**
+   * Creates all screen elements
+   * @private
+   */
   createScreen() {
     this.createOverlay();
     this.createMessage();
-    this.createStats();
     this.createShineEffect();
     this.createReplayButton();
   }
 
+  /**
+   * Creates semi-transparent overlay
+   * @private
+   */
   createOverlay() {
     const overlay = new Graphics()
       .fill({ color: 0x111111, alpha: 0.85 })
@@ -25,6 +40,10 @@ export default class WinScreen {
     this.container.addChild(overlay);
   }
 
+  /**
+   * Creates and positions the victory message
+   * @private
+   */
   createMessage() {
     const messageStyle = {
       fontFamily: 'Impact',
@@ -57,36 +76,10 @@ export default class WinScreen {
     this.animateMessage();
   }
 
-  createStats() {
-    const statsStyle = {
-      fontFamily: 'Impact',
-      fontSize: 28,
-      fill: '#A4A4A4',
-      stroke: {
-        color: '#2A2A2A',
-        width: 2,
-      },
-      dropShadow: true,
-      dropShadowColor: '#000000',
-      dropShadowBlur: 2,
-      dropShadowAngle: Math.PI / 3,
-      dropShadowDistance: 3,
-      letterSpacing: 2,
-    };
-
-    this.statsText = new Text({
-      text: `PIPES CONNECTED: ${this.currentDistance}`,
-      style: statsStyle,
-    });
-
-    this.statsText.anchor.set(0.5);
-    this.statsText.position.set(this.app.screen.width / 2, this.message.y + this.message.height + 40);
-    this.statsText.alpha = 0;
-    this.container.addChild(this.statsText);
-
-    setTimeout(() => this.fadeInStats(), 500);
-  }
-
+  /**
+   * Creates shine effect behind the message
+   * @private
+   */
   createShineEffect() {
     this.shine = new Graphics().fill({ color: 0xffffff, alpha: 0.3 }).circle(0, 0, 120);
 
@@ -97,6 +90,10 @@ export default class WinScreen {
     setTimeout(() => this.animateShine(), 200);
   }
 
+  /**
+   * Creates and positions the replay button
+   * @private
+   */
   createReplayButton() {
     const button = new ReplayButton({
       app: this.app,
@@ -107,11 +104,15 @@ export default class WinScreen {
       text: 'PLAY AGAIN',
     });
 
-    button.position.set(this.app.screen.width / 2 - button.width / 2, this.statsText.y + this.statsText.height + 40);
+    button.position.set(this.app.screen.width / 2 - button.width / 2, this.message.y + this.message.height + 40);
 
     this.container.addChild(button);
   }
 
+  /**
+   * Animates the message scale
+   * @private
+   */
   animateMessage() {
     let scale = 0;
     const animate = () => {
@@ -124,16 +125,10 @@ export default class WinScreen {
     animate();
   }
 
-  fadeInStats() {
-    const fadeIn = () => {
-      if (this.statsText.alpha < 1) {
-        this.statsText.alpha += 0.05;
-        requestAnimationFrame(fadeIn);
-      }
-    };
-    fadeIn();
-  }
-
+  /**
+   * Animates the shine effect
+   * @private
+   */
   animateShine() {
     let shineScale = 0;
     const animate = () => {
@@ -147,6 +142,9 @@ export default class WinScreen {
     animate();
   }
 
+  /**
+   * Cleans up resources
+   */
   destroy() {
     this.container.destroy({ children: true });
   }
